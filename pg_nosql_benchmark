@@ -72,15 +72,6 @@ MYSQLDATABASE="benchmark"
 
 MYSQLBIN="/home/erthalion/build/mysql/bin"
 
-MYSQLJPOHOME="/home/erthalion/build/postgresql-9.5"
-MYSQLJPOHOST="localhost"
-MYSQLJPOPORT="5432"
-MYSQLJPOUSER="erthalion"
-MYSQLJPOPASSWORD=""
-MYSQLJPODATABASE="benchmark"
-
-MYSQLJPOBIN="/home/erthalion/build/postgresql-9.5"
-
 ################################################################################
 # set mongo variables.
 ################################################################################
@@ -164,11 +155,11 @@ done
 print_result "number of rows"     "${json_rows[@]}"
 print_result "PG INSERT (ns)"     "${pg_inserts_time[@]}"
 print_result "PG SELECT (ns)"     "${pg_select_time[@]}"
-print_result "PG SIZE (bytes)"    "${pg_size_time[@]}"
+print_result "PG SIZE (bytes)"    "${pg_collection_size_time[@]}"
 
 print_result "PGJPO INSERT (ns)"     "${pgjpo_inserts_time[@]}"
 print_result "PGJPO SELECT (ns)"     "${pgjpo_select_time[@]}"
-print_result "PGJPO SIZE (bytes)"    "${pgjpo_size_time[@]}"
+print_result "PGJPO SIZE (bytes)"    "${pgjpo_collection_size_time[@]}"
 
 print_result "MYSQL INSERT (ns)"     "${mysql_inserts_time[@]}"
 print_result "MYSQL SELECT (ns)"     "${mysql_select_time[@]}"

@@ -34,7 +34,6 @@
 ################################################################################
 # source common lib
 ################################################################################
-source $DIRECTORY/lib/common_func_lib.sh
 
 ################################################################################
 # function: pg_json_insert_maker
@@ -57,9 +56,9 @@ function pg_json_insert_maker ()
 }
 
 ################################################################################
-# run_sql_file: send SQL from a file to database
+# pg_run_sql_file: send SQL from a file to database
 ################################################################################
-function run_sql_file ()
+function pg_run_sql_file ()
 {
    typeset -r F_PGHOST="$1"
    typeset -r F_PGPORT="$2"
@@ -74,9 +73,9 @@ function run_sql_file ()
 }
 
 ################################################################################
-# run_sql: send SQL to database
+# pg_run_sql: send SQL to database
 ################################################################################
-function run_sql ()
+function pg_run_sql ()
 {
    typeset -r F_PGHOST="$1"
    typeset -r F_PGPORT="$2"
@@ -103,7 +102,7 @@ function remove_pg_db ()
    typeset -r F_SQL="DROP DATABASE IF EXISTS ${F_DBNAME};"
 
    process_log "droping database ${F_DBNAME} if exists."
-   run_sql "${F_PGHOST}" "${F_PGPORT}" "postgres" "${F_PGUSER}" \
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "postgres" "${F_PGUSER}" \
            "${F_PGPASSWORD}" "${F_SQL}" #2>/dev/null >/dev/null
 }
 
@@ -120,7 +119,7 @@ function create_pg_db ()
    typeset -r F_SQL="CREATE DATABASE ${F_DBNAME};"
 
    process_log "creating database ${F_DBNAME}."
-   run_sql "${F_PGHOST}" "${F_PGPORT}" "postgres" "${F_PGUSER}" \
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "postgres" "${F_PGUSER}" \
            "${F_PGPASSWORD}" "${F_SQL}"
 }
 
@@ -138,7 +137,7 @@ function pg_relation_size ()
    typeset -r F_SQL="SELECT pg_catalog.pg_relation_size('${F_RELATION}');"
 
    process_log "calculating PostgreSQL collection size."
-   run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
            "${F_PGPASSWORD}" "${F_SQL}"
 }
 
@@ -156,7 +155,7 @@ function if_dbexists ()
                      FROM pg_catalog.pg_database
                         WHERE datname='${F_DBNAME}';"
 
-   output=$(run_sql "${F_PGHOST}" "${F_PGPORT}" "postgres" "${F_PGUSER}" \
+   output=$(pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "postgres" "${F_PGUSER}" \
                     "${F_PGPASSWORD}" \
                     "${F_SQL}")
    echo ${output}
@@ -177,10 +176,10 @@ function mk_pg_json_collection ()
    typeset -r F_SQL2="CREATE TABLE  ${F_TABLE} (data JSONB);"
 
   process_log "creating ${F_TABLE} collection in postgreSQL."
-  run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+  pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
           "${F_PGPASSWORD}" "${F_SQL1}" \
           >/dev/null 2>/dev/null
-  run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+  pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
           "${F_PGPASSWORD}" "${F_SQL2}" \
           >/dev/null 2>/dev/null
 
@@ -201,7 +200,7 @@ function pg_create_index_collection ()
    typeset -r F_SQL="CREATE INDEX ${F_TABLE}_idx ON ${F_TABLE} USING gin(data ${F_INDEX});"
 
    process_log "creating index on postgreSQL collections."
-   run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
            "${F_PGPASSWORD}" "${F_SQL}" \
             >/dev/null
 
@@ -263,7 +262,7 @@ function delete_json_data ()
    typeset -r F_COLLECTION="$6"
 
    process_log "droping json object in postgresql."
-   run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
            "${F_PGPASSWORD}" \
            "TRUNCATE TABLE ${F_COLLECTION};" >/dev/null
 }
@@ -286,7 +285,7 @@ function pg_copy_benchmark ()
                           "${F_PGUSER}" "${F_PGPASSWORD}")
    process_log "loading data in postgresql using ${F_JSONFILE}."
    start_time=$(get_timestamp_nano)
-   cat ${F_JSONFILE}|run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" \
+   cat ${F_JSONFILE}|pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" \
                              "${F_PGUSER}" "${F_PGPASSWORD}" "${F_COPY}"
    end_time=$(get_timestamp_nano)
    total_time="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
@@ -312,7 +311,7 @@ function pg_inserts_benchmark ()
 
    process_log "inserting data in postgresql using ${F_INSERTS}."
    start_time=$(get_timestamp_nano)
-   run_sql_file "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+   pg_run_sql_file "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
                 "${F_PGPASSWORD}" "${F_INSERTS}"
    end_time=$(get_timestamp_nano)
    total_time="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
@@ -347,7 +346,7 @@ function pg_select_benchmark ()
 
    process_log "testing FIRST SELECT in postgresql."
    start_time=$(get_timestamp_nano)
-   run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
            "${F_PGPASSWORD}" \
            "${F_SELECT1}" >/dev/null || exit_on_error "failed to execute SELECT 1."
    end_time=$(get_timestamp_nano)
@@ -355,7 +354,7 @@ function pg_select_benchmark ()
 
    process_log "testing SECOND SELECT in postgresql."
    start_time=$(get_timestamp_nano)
-   run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
            "${F_PGPASSWORD}" \
            "${F_SELECT2}" >/dev/null || exit_on_error "failed to execute SELECT 2."
    end_time=$(get_timestamp_nano)
@@ -363,7 +362,7 @@ function pg_select_benchmark ()
 
    process_log "testing THIRD SELECT in postgresql."
    start_time=$(get_timestamp_nano)
-   run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
            "${F_PGPASSWORD}" \
            "${F_SELECT3}" >/dev/null || exit_on_error "failed to execute SELECT 3."
    end_time=$(get_timestamp_nano)
@@ -371,7 +370,7 @@ function pg_select_benchmark ()
 
    process_log "testing FOURTH SELECT in postgresql."
    start_time=$(get_timestamp_nano)
-   run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
            "${F_PGPASSWORD}" \
            "${F_SELECT4}" >/dev/null || exit_on_error "failed to execute SELECT 4."
    end_time=$(get_timestamp_nano)
@@ -396,7 +395,7 @@ function analyze_collections ()
    typeset -r F_SQL="VACUUM FREEZE ANALYZE ${F_TABLE};"
 
    process_log "performing analyze in postgreSQL."
-   run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
            "${F_PGPASSWORD}" "${F_SQL}" \
             >/dev/null 2>/dev/null
 }
@@ -413,7 +412,7 @@ function pg_version ()
    typeset -r F_PGPASSWORD="$5"
    typeset -r F_SQL="select split_part(version(),' ',2);"
 
-   version=$(run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+   version=$(pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
            "${F_PGPASSWORD}" "${F_SQL}")
     echo "${version}"
 }

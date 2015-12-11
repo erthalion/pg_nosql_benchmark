@@ -35,7 +35,6 @@
 # source common lib
 ################################################################################
 DIRECTORY=$(dirname $0)
-source ${DIRECTORY}/lib/common_func_lib.sh
 
 ################################################################################
 # mongo_run_command: send command to mongodb
