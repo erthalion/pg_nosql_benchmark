@@ -175,6 +175,12 @@ function version ()
                             "${PGJPOPASSWORD}"
                 )
 
+    mysql_version=$(mysql_version "${MYSQLHOST}"     \
+                            "${MYSQLPORT}"          \
+                            ""                 \
+                            "${MYSQLUSER}"          \
+                            "${MYSQLPASSWORD}"
+                )
 }
 
 ################################################################################
@@ -185,6 +191,10 @@ function insert_maker ()
    pg_json_insert_maker "${COLLECTION_NAME}"    \
                         "${json_rows[${indx}]}" \
                         "${PG_INSERTS}"
+
+   mysql_json_insert_maker "${COLLECTION_NAME}" \
+                        "${json_rows[${indx}]}" \
+                        "${MYSQL_INSERTS}"
 
    mongo_json_insert_maker "${COLLECTION_NAME}"    \
                            "${json_rows[${indx}]}" \
@@ -207,6 +217,12 @@ function remove_db ()
                 "${PGJPODATABASE}" \
                 "${PGJPOUSER}"     \
                 "${PGJPOPASSWORD}"
+
+   remove_mysql_db "${MYSQLHOST}"  \
+                "${MYSQLPORT}"     \
+                "${MYSQLDATABASE}" \
+                "${MYSQLUSER}"     \
+                "${MYSQLPASSWORD}"
 
    drop_mongocollection "${MONGOHOST}"     \
                         "${MONGOPORT}"     \
@@ -232,6 +248,12 @@ function create_db ()
                 "${PGJPODATABASE}" \
                 "${PGJPOUSER}"     \
                 "${PGJPOPASSWORD}"
+
+   create_mysql_db "${MYSQLJPOHOST}"  \
+                "${MYSQLJPOPORT}"     \
+                "${MYSQLJPODATABASE}" \
+                "${MYSQLJPOUSER}"     \
+                "${MYSQLJPOPASSWORD}"
 }
 
 ################################################################################
@@ -251,6 +273,13 @@ function mk_json_collection ()
                          "${PGJPODATABASE}" \
                          "${PGJPOUSER}"     \
                          "${PGJPOPASSWORD}" \
+                         "${COLLECTION_NAME}"
+
+   mk_mysql_json_collection "${MYSQLJPOHOST}"  \
+                         "${MYSQLJPOPORT}"     \
+                         "${MYSQLJPODATABASE}" \
+                         "${MYSQLJPOUSER}"     \
+                         "${MYSQLJPOPASSWORD}" \
                          "${COLLECTION_NAME}"
 }
 
@@ -273,13 +302,19 @@ function create_index ()
                               "${PGJPOPASSWORD}" \
                               "${COLLECTION_NAME}"
 
-
    mongodb_create_index "${MONGOHOST}"     \
                         "${MONGOPORT}"     \
                         "${MONGODBNAME}"   \
                         "${MONGOUSER}"     \
                         "${MONGOPASSWORD}" \
                         "${COLLECTION_NAME}"
+
+   mysql_create_index_collection "${MYSQLHOST}" \
+                              "${MYSQLPORT}"        \
+                              "${MYSQLDATABASE}"    \
+                              "${MYSQLUSER}"        \
+                              "${MYSQLPASSWORD}"    \
+                              "${COLLECTION_NAME}"
 }
 
 ################################################################################
@@ -313,6 +348,14 @@ function insert_time ()
                                                     "${COLLECTION_NAME}" \
                                                     "${PGJPO_INSERTS}"
                               )
+   mysql_inserts_time[${indx}]=$(pg_inserts_benchmark  "${MYSQLHOST}"       \
+                                                    "${MYSQLPORT}"          \
+                                                    "${MYSQLDATABASE}"      \
+                                                    "${MYSQLUSER}"          \
+                                                    "${MYSQLPASSWORD}"      \
+                                                    "${COLLECTION_NAME}"    \
+                                                    "${MYSQL_INSERTS}"
+                              )
 }
 
 ################################################################################
@@ -343,14 +386,21 @@ function select_time ()
                                                  "${PGJPOPASSWORD}" \
                                                  "${COLLECTION_NAME}"
                             )
+   mysql_select_time[${indx}]=$(mysql_select_benchmark "${MYSQLHOST}"  \
+                                                 "${MYSQLPORT}"     \
+                                                 "${MYSQLDATABASE}" \
+                                                 "${MYSQLUSER}"     \
+                                                 "${MYSQLPASSWORD}" \
+                                                 "${COLLECTION_NAME}"
+                             )
 }
 
 ################################################################################
-# size collect size of collection and index
+# collection_size collect size of collection
 ################################################################################
-function size ()
+function collection_size ()
 {
-   pg_size_time[${indx}]=$(pg_relation_size "${PGHOST}"     \
+   pg_collection_size_time[${indx}]=$(pg_relation_size "${PGHOST}"     \
                                             "${PGPORT}"     \
                                             "${PGDATABASE}" \
                                             "${PGUSER}"     \
@@ -358,7 +408,7 @@ function size ()
                                             "${COLLECTION_NAME}"
                           )
 
-   pgjpo_size_time[${indx}]=$(pg_relation_size "${PGJPOHOST}"     \
+   pgjpo_collection_size_time[${indx}]=$(pg_relation_size "${PGJPOHOST}"     \
                                             "${PGJPOPORT}"     \
                                             "${PGJPODATABASE}" \
                                             "${PGJPOUSER}"     \
@@ -366,11 +416,57 @@ function size ()
                                             "${COLLECTION_NAME}"
                           )
 
-   mongo_size_time[${indx}]=$(mongo_collection_size "${MONGOHOST}"     \
+   mongo_collection_size_time[${indx}]=$(mongo_collection_size "${MONGOHOST}"     \
                                                     "${MONGOPORT}"     \
                                                     "${MONGODBNAME}"   \
                                                     "${MONGOUSER}"     \
                                                     "${MONGOPASSWORD}" \
                                                     "${COLLECTION_NAME}"
                              )
+
+   mysql_collection_size_time[${indx}]=$(mysql_relation_size "${MYSQLJPOHOST}"     \
+                                            "${MYSQLJPOPORT}"     \
+                                            "${MYSQLJPODATABASE}" \
+                                            "${MYSQLJPOUSER}"     \
+                                            "${MYSQLJPOPASSWORD}" \
+                                            "${COLLECTION_NAME}"
+                          )
+}
+
+################################################################################
+# index_size collect size of index
+################################################################################
+function index_size ()
+{
+   pg_index_size_time[${indx}]=$(pg_relation_size "${PGHOST}"     \
+                                            "${PGPORT}"     \
+                                            "${PGDATABASE}" \
+                                            "${PGUSER}"     \
+                                            "${PGPASSWORD}" \
+                                            "${COLLECTION_NAME}"
+                          )
+
+   pgjpo_index_size_time[${indx}]=$(pg_relation_size "${PGJPOHOST}"     \
+                                            "${PGJPOPORT}"     \
+                                            "${PGJPODATABASE}" \
+                                            "${PGJPOUSER}"     \
+                                            "${PGJPOPASSWORD}" \
+                                            "${COLLECTION_NAME}"
+                          )
+
+   mongo_index_size_time[${indx}]=$(mongo_collection_size "${MONGOHOST}"     \
+                                                    "${MONGOPORT}"     \
+                                                    "${MONGODBNAME}"   \
+                                                    "${MONGOUSER}"     \
+                                                    "${MONGOPASSWORD}" \
+                                                    "${COLLECTION_NAME}"
+                             )
+
+   mysql_index_size_time[${indx}]=$(mysql_index_size "${MYSQLJPOHOST}"     \
+                                            "${MYSQLJPOPORT}"     \
+                                            "${MYSQLJPODATABASE}" \
+                                            "${MYSQLJPOUSER}"     \
+                                            "${MYSQLJPOPASSWORD}" \
+                                            "${COLLECTION_NAME}"
+                          )
 }

@@ -61,6 +61,27 @@ PGJPODATABASE="benchmark"
 PGJPOBIN="/home/erthalion/build/postgresql-9.5"
 
 ################################################################################
+# set mysql variables.
+################################################################################
+MYSQLHOME="/home/erthalion/build/mysql"
+MYSQLHOST="localhost"
+MYSQLPORT="3306"
+MYSQLUSER="root"
+MYSQLPASSWORD=""
+MYSQLDATABASE="benchmark"
+
+MYSQLBIN="/home/erthalion/build/mysql/bin"
+
+MYSQLJPOHOME="/home/erthalion/build/postgresql-9.5"
+MYSQLJPOHOST="localhost"
+MYSQLJPOPORT="5432"
+MYSQLJPOUSER="erthalion"
+MYSQLJPOPASSWORD=""
+MYSQLJPODATABASE="benchmark"
+
+MYSQLJPOBIN="/home/erthalion/build/postgresql-9.5"
+
+################################################################################
 # set mongo variables.
 ################################################################################
 MONGO="/usr/bin/mongo"
@@ -75,6 +96,7 @@ COLLECTION_NAME="json_tables"
 SAMPLEJSON="sample.json"
 PG_INSERTS="sample_pg_inserts.json"
 PGJPO_INSERTS="sample_pg_inserts.json"
+MYSQL_INSERTS="sample_mysql_inserts.json"
 MONGO_INSERTS="sample_mongo_inserts.json"
 
 export PATH=$PGBIN:$PATH
@@ -84,21 +106,28 @@ export PATH=$PGBIN:$PATH
 ################################################################################
 source ${DIRECTORY}/lib/common_func_lib.sh
 source ${DIRECTORY}/lib/pg_func_lib.sh
+source ${DIRECTORY}/lib/mysql_func_lib.sh
 source ${DIRECTORY}/lib/mongo_func_lib.sh
 
 ################################################################################
 # declare require arrays
 ################################################################################
-declare -a json_rows=(10000000)
+declare -a json_rows=(10)
 
-declare -a pg_size_time
-declare -a pg_copy_time
+declare -a pg_collection_size_time
+declare -a pg_index_size_time
 declare -a pg_inserts_time
 declare -a pg_select_time
 
+# mysql specific arrays
+declare -a mysql_collection_size_time
+declare -a mysql_index_size_time
+declare -a mysql_inserts_time
+declare -a mysql_select_time
+
 # mongo specific arrays
-declare -a mongo_size_time
-declare -a mongo_copy_time
+declare -a mongo_collection_size_time
+declare -a mongo_index_size_time
 declare -a mongo_inserts_time
 declare -a mongo_select_time
 
@@ -110,6 +139,7 @@ version
 process_log "MongoDB Version $mongodb_version"
 process_log "PostgreSQL with GIN index Version $pg_version"
 process_log "PostgreSQL with jsonb_path_ops index Version $pg_version_jpo"
+process_log "Mysql Version $mysql_version"
 
 
 for (( indx=0 ; indx < ${#json_rows[@]} ; indx++ ))
@@ -125,7 +155,8 @@ do
 
    insert_time
    select_time
-   size
+   collection_size
+   index_size
 
 done
 
@@ -138,6 +169,11 @@ print_result "PG SIZE (bytes)"    "${pg_size_time[@]}"
 print_result "PGJPO INSERT (ns)"     "${pgjpo_inserts_time[@]}"
 print_result "PGJPO SELECT (ns)"     "${pgjpo_select_time[@]}"
 print_result "PGJPO SIZE (bytes)"    "${pgjpo_size_time[@]}"
+
+print_result "MYSQL INSERT (ns)"     "${mysql_inserts_time[@]}"
+print_result "MYSQL SELECT (ns)"     "${mysql_select_time[@]}"
+print_result "MYSQL TABLE SIZE (bytes)"    "${mysql_collection_size_time[@]}"
+print_result "MYSQL INDEX SIZE (bytes)"    "${mysql_index_size_time[@]}"
 
 print_result "MONGO IMPORT (ns)"  "${mongo_copy_time[@]}"
 print_result "MONGO INSERT (ns)"  "${mongo_inserts_time[@]}"

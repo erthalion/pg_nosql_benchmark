@@ -104,7 +104,7 @@ function remove_pg_db ()
 
    process_log "droping database ${F_DBNAME} if exists."
    run_sql "${F_PGHOST}" "${F_PGPORT}" "postgres" "${F_PGUSER}" \
-           "${F_PGPASSWORD}" "${F_SQL}" 2>/dev/null >/dev/null
+           "${F_PGPASSWORD}" "${F_SQL}" #2>/dev/null >/dev/null
 }
 
 ################################################################################
