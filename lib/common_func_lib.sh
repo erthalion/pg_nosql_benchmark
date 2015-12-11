@@ -147,3 +147,230 @@ function print_result()
    done
    printf "\n"
 }
+
+
+################################################################################
+# version get versions of used databases
+################################################################################
+function version ()
+{
+    mongodb_version=$(mongo_version "${MONGOHOST}"     \
+                                    "${MONGOPORT}"     \
+                                    "${MONGODBNAME}"   \
+                                    "${MONGOUSER}"     \
+                                    "${MONGOPASSWORD}"
+                      )
+
+    pg_version=$(pg_version "${PGHOST}"          \
+                            "${PGPORT}"          \
+                            "${PGDATABASE}"      \
+                            "${PGUSER}"          \
+                            "${PGPASSWORD}"
+                )
+
+    pg_version_jpo=$(pg_version "${PGJPOHOST}"          \
+                            "${PGJPOPORT}"          \
+                            "${PGJPODATABASE}"      \
+                            "${PGJPOUSER}"          \
+                            "${PGJPOPASSWORD}"
+                )
+
+}
+
+################################################################################
+# insert_maker generate db specific inserts
+################################################################################
+function insert_maker ()
+{
+   pg_json_insert_maker "${COLLECTION_NAME}"    \
+                        "${json_rows[${indx}]}" \
+                        "${PG_INSERTS}"
+
+   mongo_json_insert_maker "${COLLECTION_NAME}"    \
+                           "${json_rows[${indx}]}" \
+                           "${MONGO_INSERTS}"
+}
+
+################################################################################
+# remove_db remove databases, which were used for test
+################################################################################
+function remove_db ()
+{
+   remove_pg_db "${PGHOST}"     \
+                "${PGPORT}"     \
+                "${PGDATABASE}" \
+                "${PGUSER}"     \
+                "${PGPASSWORD}"
+
+   remove_pg_db "${PGJPOHOST}"     \
+                "${PGJPOPORT}"     \
+                "${PGJPODATABASE}" \
+                "${PGJPOUSER}"     \
+                "${PGJPOPASSWORD}"
+
+   drop_mongocollection "${MONGOHOST}"     \
+                        "${MONGOPORT}"     \
+                        "${MONGODBNAME}"   \
+                        "${MONGOUSER}"     \
+                        "${MONGOPASSWORD}" \
+                        "${COLLECTION_NAME}"
+}
+
+################################################################################
+# create_db create databases for test
+################################################################################
+function create_db ()
+{
+   create_pg_db "${PGHOST}"     \
+                "${PGPORT}"     \
+                "${PGDATABASE}" \
+                "${PGUSER}"     \
+                "${PGPASSWORD}"
+
+   create_pg_db "${PGJPOHOST}"     \
+                "${PGJPOPORT}"     \
+                "${PGJPODATABASE}" \
+                "${PGJPOUSER}"     \
+                "${PGJPOPASSWORD}"
+}
+
+################################################################################
+# mk_json_collection create corresponding relation or collection
+################################################################################
+function mk_json_collection ()
+{
+   mk_pg_json_collection "${PGHOST}"     \
+                         "${PGPORT}"     \
+                         "${PGDATABASE}" \
+                         "${PGUSER}"     \
+                         "${PGPASSWORD}" \
+                         "${COLLECTION_NAME}"
+
+   mk_pg_json_collection "${PGJPOHOST}"     \
+                         "${PGJPOPORT}"     \
+                         "${PGJPODATABASE}" \
+                         "${PGJPOUSER}"     \
+                         "${PGJPOPASSWORD}" \
+                         "${COLLECTION_NAME}"
+}
+
+################################################################################
+# create_index create index for corresponding collection
+################################################################################
+function create_index ()
+{
+   pg_create_gin_index_collection "${PGHOST}" \
+                              "${PGPORT}"     \
+                              "${PGDATABASE}" \
+                              "${PGUSER}"     \
+                              "${PGPASSWORD}" \
+                              "${COLLECTION_NAME}"
+
+   pg_create_jpo_index_collection "${PGJPOHOST}" \
+                              "${PGJPOPORT}"     \
+                              "${PGJPODATABASE}" \
+                              "${PGJPOUSER}"     \
+                              "${PGJPOPASSWORD}" \
+                              "${COLLECTION_NAME}"
+
+
+   mongodb_create_index "${MONGOHOST}"     \
+                        "${MONGOPORT}"     \
+                        "${MONGODBNAME}"   \
+                        "${MONGOUSER}"     \
+                        "${MONGOPASSWORD}" \
+                        "${COLLECTION_NAME}"
+}
+
+################################################################################
+# inserts_time measure time for insert queries
+################################################################################
+function insert_time ()
+{
+   mongo_inserts_time[${indx}]=$(mongodb_inserts_benchmark "${MONGOHOST}"       \
+                                                           "${MONGOPORT}"       \
+                                                           "${MONGODBNAME}"     \
+                                                           "${MONGOUSER}"       \
+                                                           "${MONGOPASSWORD}"   \
+                                                           "${COLLECTION_NAME}" \
+                                                            "${MONGO_INSERTS}"
+                                )
+
+   pg_inserts_time[${indx}]=$(pg_inserts_benchmark  "${PGHOST}"          \
+                                                    "${PGPORT}"          \
+                                                    "${PGDATABASE}"      \
+                                                    "${PGUSER}"          \
+                                                    "${PGPASSWORD}"      \
+                                                    "${COLLECTION_NAME}" \
+                                                    "${PG_INSERTS}"
+                              )
+
+   pgjpo_inserts_time[${indx}]=$(pg_inserts_benchmark  "${PGJPOHOST}"          \
+                                                    "${PGJPOPORT}"          \
+                                                    "${PGJPODATABASE}"      \
+                                                    "${PGJPOUSER}"          \
+                                                    "${PGJPOPASSWORD}"      \
+                                                    "${COLLECTION_NAME}" \
+                                                    "${PGJPO_INSERTS}"
+                              )
+}
+
+################################################################################
+# select_time measure time for select queries
+################################################################################
+function select_time ()
+{
+   mongo_select_time[${indx}]=$(mongodb_select_benchmark "${MONGOHOST}"     \
+                                                         "${MONGOPORT}"     \
+                                                         "${MONGODBNAME}"   \
+                                                         "${MONGOUSER}"     \
+                                                         "${MONGOPASSWORD}" \
+                                                         "${COLLECTION_NAME}"
+                                )
+
+   pg_select_time[${indx}]=$(pg_select_benchmark "${PGHOST}"     \
+                                                 "${PGPORT}"     \
+                                                 "${PGDATABASE}" \
+                                                 "${PGUSER}"     \
+                                                 "${PGPASSWORD}" \
+                                                 "${COLLECTION_NAME}"
+                             )
+
+   pgjpo_select_time[${indx}]=$(pg_select_benchmark "${PGJPOHOST}"     \
+                                                 "${PGJPOPORT}"     \
+                                                 "${PGJPODATABASE}" \
+                                                 "${PGJPOUSER}"     \
+                                                 "${PGJPOPASSWORD}" \
+                                                 "${COLLECTION_NAME}"
+                            )
+}
+
+################################################################################
+# size collect size of collection and index
+################################################################################
+function size ()
+{
+   pg_size_time[${indx}]=$(pg_relation_size "${PGHOST}"     \
+                                            "${PGPORT}"     \
+                                            "${PGDATABASE}" \
+                                            "${PGUSER}"     \
+                                            "${PGPASSWORD}" \
+                                            "${COLLECTION_NAME}"
+                          )
+
+   pgjpo_size_time[${indx}]=$(pg_relation_size "${PGJPOHOST}"     \
+                                            "${PGJPOPORT}"     \
+                                            "${PGJPODATABASE}" \
+                                            "${PGJPOUSER}"     \
+                                            "${PGJPOPASSWORD}" \
+                                            "${COLLECTION_NAME}"
+                          )
+
+   mongo_size_time[${indx}]=$(mongo_collection_size "${MONGOHOST}"     \
+                                                    "${MONGOPORT}"     \
+                                                    "${MONGODBNAME}"   \
+                                                    "${MONGOUSER}"     \
+                                                    "${MONGOPASSWORD}" \
+                                                    "${COLLECTION_NAME}"
+                             )
+}

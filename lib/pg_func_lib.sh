@@ -197,13 +197,56 @@ function pg_create_index_collection ()
    typeset -r F_PGUSER="$4"
    typeset -r F_PGPASSWORD="$5"
    typeset -r F_TABLE="$6"
-   typeset -r F_SQL="CREATE INDEX ${F_TABLE}_idx ON ${F_TABLE} USING gin(data);"
+   typeset -r F_INDEX="$7"
+   typeset -r F_SQL="CREATE INDEX ${F_TABLE}_idx ON ${F_TABLE} USING gin(data ${F_INDEX});"
 
    process_log "creating index on postgreSQL collections."
    run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
            "${F_PGPASSWORD}" "${F_SQL}" \
             >/dev/null
 
+}
+
+################################################################################
+# function: pg_create_gin_index create simle gin index for jsonb table in PG
+################################################################################
+function pg_create_gin_index_collection ()
+{
+   typeset -r F_PGHOST="$1"
+   typeset -r F_PGPORT="$2"
+   typeset -r F_DBNAME="$3"
+   typeset -r F_PGUSER="$4"
+   typeset -r F_PGPASSWORD="$5"
+   typeset -r F_TABLE="$6"
+
+   pg_create_index_collection "${F_PGHOST}" \
+                              "${F_PGPORT}" \
+                              "${F_DBNAME}" \
+                              "${F_PGUSER}" \
+                              "${F_PGPASSWORD}" \
+                              "${F_TABLE}" \
+                              "" # no special index options
+}
+
+################################################################################
+# function: pg_create_jpo_index create jsonb_path_ops index for jsonb table in PG
+################################################################################
+function pg_create_jpo_index_collection ()
+{
+   typeset -r F_PGHOST="$1"
+   typeset -r F_PGPORT="$2"
+   typeset -r F_DBNAME="$3"
+   typeset -r F_PGUSER="$4"
+   typeset -r F_PGPASSWORD="$5"
+   typeset -r F_TABLE="$6"
+
+   pg_create_index_collection "${F_PGHOST}" \
+                              "${F_PGPORT}" \
+                              "${F_DBNAME}" \
+                              "${F_PGUSER}" \
+                              "${F_PGPASSWORD}" \
+                              "${F_TABLE}" \
+                              "jsonb_path_ops" # no special index options
 }
 
 ################################################################################

@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 #################################################################################
 # Copyright (c) 2013-2014, EnterpriseDB Corporation
@@ -42,14 +42,23 @@
 DIRECTORY=$(dirname $0)
 BASENAME=$(basename $0)
 
-PGHOME="/usr/ppas-9.3"
-PGHOST="172.17.0.4"
+PGHOME="/home/erthalion/build/postgresql-9.5"
+PGHOST="localhost"
 PGPORT="5432"
-PGUSER="postgres"
-PGPASSWORD="postgres"
+PGUSER="erthalion"
+PGPASSWORD=""
 PGDATABASE="benchmark"
 
-PGBIN="/usr/ppas-9.3/bin"
+PGBIN="/home/erthalion/build/postgresql-9.5"
+
+PGJPOHOME="/home/erthalion/build/postgresql-9.5"
+PGJPOHOST="localhost"
+PGJPOPORT="5432"
+PGJPOUSER="erthalion"
+PGJPOPASSWORD=""
+PGJPODATABASE="benchmark"
+
+PGJPOBIN="/home/erthalion/build/postgresql-9.5"
 
 ################################################################################
 # set mongo variables.
@@ -65,6 +74,7 @@ MONGODBNAME="benchmark"
 COLLECTION_NAME="json_tables"
 SAMPLEJSON="sample.json"
 PG_INSERTS="sample_pg_inserts.json"
+PGJPO_INSERTS="sample_pg_inserts.json"
 MONGO_INSERTS="sample_mongo_inserts.json"
 
 export PATH=$PGBIN:$PATH
@@ -72,6 +82,7 @@ export PATH=$PGBIN:$PATH
 ################################################################################
 # source library files
 ################################################################################
+source ${DIRECTORY}/lib/common_func_lib.sh
 source ${DIRECTORY}/lib/pg_func_lib.sh
 source ${DIRECTORY}/lib/mongo_func_lib.sh
 
@@ -94,22 +105,11 @@ declare -a mongo_select_time
 ################################################################################
 # main function
 ################################################################################
-mongodb_version=$(mongo_version "${MONGOHOST}"     \
-                                "${MONGOPORT}"     \
-                                "${MONGODBNAME}"   \
-                                "${MONGOUSER}"     \
-                                "${MONGOPASSWORD}"
-                  )
-
-pg_version=$(pg_version "${PGHOST}"          \
-                        "${PGPORT}"          \
-                        "${PGDATABASE}"      \
-                        "${PGUSER}"          \
-                        "${PGPASSWORD}"
-            )
+version
 
 process_log "MongoDB Version $mongodb_version"
-process_log "PostgreSQL Version $pg_version"
+process_log "PostgreSQL with GIN index Version $pg_version"
+process_log "PostgreSQL with jsonb_path_ops index Version $pg_version_jpo"
 
 
 for (( indx=0 ; indx < ${#json_rows[@]} ; indx++ ))
@@ -117,143 +117,28 @@ do
    generate_json_rows "${json_rows[${indx}]}" \
                       "${SAMPLEJSON}"
 
-   pg_json_insert_maker "${COLLECTION_NAME}"    \
-                        "${json_rows[${indx}]}" \
-                        "${PG_INSERTS}"
+   insert_maker
+   remove_db
+   create_db
+   mk_json_collection
+   create_index
 
-   mongo_json_insert_maker "${COLLECTION_NAME}"    \
-                           "${json_rows[${indx}]}" \
-                           "${MONGO_INSERTS}"
+   insert_time
+   select_time
+   size
 
-
-   remove_pg_db "${PGHOST}"     \
-                "${PGPORT}"     \
-                "${PGDATABASE}" \
-                "${PGUSER}"     \
-                "${PGPASSWORD}"
-   create_pg_db "${PGHOST}"     \
-                "${PGPORT}"     \
-                "${PGDATABASE}" \
-                "${PGUSER}"     \
-                "${PGPASSWORD}"
-
-   drop_mongocollection "${MONGOHOST}"     \
-                        "${MONGOPORT}"     \
-                        "${MONGODBNAME}"   \
-                        "${MONGOUSER}"     \
-                        "${MONGOPASSWORD}" \
-                        "${COLLECTION_NAME}"
-
-   mk_pg_json_collection "${PGHOST}"     \
-                         "${PGPORT}"     \
-                         "${PGDATABASE}" \
-                         "${PGUSER}"     \
-                         "${PGPASSWORD}" \
-                         "${COLLECTION_NAME}"
-
-   pg_copy_time[${indx}]=$(pg_copy_benchmark  "${PGHOST}"          \
-                                              "${PGPORT}"          \
-                                              "${PGDATABASE}"      \
-                                              "${PGUSER}"          \
-                                              "${PGPASSWORD}"      \
-                                              "${COLLECTION_NAME}" \
-                                              "${SAMPLEJSON}"
-                          )
-
-
-   pg_create_index_collection "${PGHOST}"     \
-                              "${PGPORT}"     \
-                              "${PGDATABASE}" \
-                              "${PGUSER}"     \
-                              "${PGPASSWORD}" \
-                              "${COLLECTION_NAME}"
-
-   mongo_copy_time[${indx}]=$(mongodb_import_benchmark "${MONGOHOST}"       \
-                                                       "${MONGOPORT}"       \
-                                                       "${MONGODBNAME}"     \
-                                                       "${MONGOUSER}"       \
-                                                       "${MONGOPASSWORD}"   \
-                                                       "${COLLECTION_NAME}" \
-                                                       "${SAMPLEJSON}"
-                              )
-
-
-   mongodb_create_index "${MONGOHOST}"     \
-                        "${MONGOPORT}"     \
-                        "${MONGODBNAME}"   \
-                        "${MONGOUSER}"     \
-                        "${MONGOPASSWORD}" \
-                        "${COLLECTION_NAME}"
-
-   pg_select_time[${indx}]=$(pg_select_benchmark "${PGHOST}"     \
-                                                 "${PGPORT}"     \
-                                                 "${PGDATABASE}" \
-                                                 "${PGUSER}"     \
-                                                 "${PGPASSWORD}" \
-                                                 "${COLLECTION_NAME}"
-                            )
-   pg_size_time[${indx}]=$(pg_relation_size "${PGHOST}"     \
-                                            "${PGPORT}"     \
-                                            "${PGDATABASE}" \
-                                            "${PGUSER}"     \
-                                            "${PGPASSWORD}" \
-                                            "${COLLECTION_NAME}"
-                          )
-
-   mongo_select_time[${indx}]=$(mongodb_select_benchmark "${MONGOHOST}"     \
-                                                         "${MONGOPORT}"     \
-                                                         "${MONGODBNAME}"   \
-                                                         "${MONGOUSER}"     \
-                                                         "${MONGOPASSWORD}" \
-                                                         "${COLLECTION_NAME}"
-                                )
-
-   mongo_size_time[${indx}]=$(mongo_collection_size "${MONGOHOST}"     \
-                                                    "${MONGOPORT}"     \
-                                                    "${MONGODBNAME}"   \
-                                                    "${MONGOUSER}"     \
-                                                    "${MONGOPASSWORD}" \
-                                                    "${COLLECTION_NAME}"
-                             )
- 
-   drop_mongocollection "${MONGOHOST}"     \
-                        "${MONGOPORT}"     \
-                        "${MONGODBNAME}"   \
-                        "${MONGOUSER}"     \
-                        "${MONGOPASSWORD}" \
-                        "${COLLECTION_NAME}"
-
-   mongo_inserts_time[${indx}]=$(mongodb_inserts_benchmark "${MONGOHOST}"       \
-                                                           "${MONGOPORT}"       \
-                                                           "${MONGODBNAME}"     \
-                                                           "${MONGOUSER}"       \
-                                                           "${MONGOPASSWORD}"   \
-                                                           "${COLLECTION_NAME}" \
-                                                            "${MONGO_INSERTS}"
-                                )
-   delete_json_data "${PGHOST}"      \
-                    "${PGPORT}"      \
-                    "${PGDATABASE}"  \
-                    "${PGUSER}"      \
-                    "${PGPASSWORD}"  \
-                    "${COLLECTION_NAME}"
-
-   pg_inserts_time[${indx}]=$(pg_inserts_benchmark  "${PGHOST}"          \
-                                                    "${PGPORT}"          \
-                                                    "${PGDATABASE}"      \
-                                                    "${PGUSER}"          \
-                                                    "${PGPASSWORD}"      \
-                                                    "${COLLECTION_NAME}" \
-                                                    "${PG_INSERTS}"
-                              )
 done
 
 
 print_result "number of rows"     "${json_rows[@]}"
-print_result "PG COPY (ns)"       "${pg_copy_time[@]}"
 print_result "PG INSERT (ns)"     "${pg_inserts_time[@]}"
 print_result "PG SELECT (ns)"     "${pg_select_time[@]}"
 print_result "PG SIZE (bytes)"    "${pg_size_time[@]}"
+
+print_result "PGJPO INSERT (ns)"     "${pgjpo_inserts_time[@]}"
+print_result "PGJPO SELECT (ns)"     "${pgjpo_select_time[@]}"
+print_result "PGJPO SIZE (bytes)"    "${pgjpo_size_time[@]}"
+
 print_result "MONGO IMPORT (ns)"  "${mongo_copy_time[@]}"
 print_result "MONGO INSERT (ns)"  "${mongo_inserts_time[@]}"
 print_result "MONGO SELECT (ns)"  "${mongo_select_time[@]}"
