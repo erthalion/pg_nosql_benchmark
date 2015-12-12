@@ -434,3 +434,64 @@ function pg_version ()
            "${F_PGPASSWORD}" "${F_SQL}")
     echo "${version}"
 }
+
+################################################################################
+# function: pg_update_benchmark generate update query for json table
+################################################################################
+function pg_update_benchmark ()
+{
+   typeset -r F_PGHOST="$1"
+   typeset -r F_PGPORT="$2"
+   typeset -r F_DBNAME="$3"
+   typeset -r F_PGUSER="$4"
+   typeset -r F_PGPASSWORD="$5"
+   typeset -r F_COLLECTION="$6"
+   typeset -r F_UPDATE1="UPDATE ${F_COLLECTION}
+                        SET data = jsonb_set(
+                            data,
+                            '{price}',
+                            to_jsonb((data->>'price')::int + 100)
+                        ) WHERE (data->>'brand') = 'ACME';"
+
+   typeset -r F_UPDATE2="UPDATE ${F_COLLECTION}
+                        SET data = jsonb_set(
+                            data,
+                            '{limits, data, over_rate}',
+                            '10'
+                        ) WHERE (data->>'type') = 'service';"
+
+   typeset -r F_UPDATE3="UPDATE ${F_COLLECTION}
+                        SET data = jsonb_set(
+                            data,
+                            '{limits, data, extra}',
+                            '\"Extra Data\"'
+                        ) WHERE (data->>'type') = 'service';"
+
+   process_log "testing FIRST UPDATE in postgresql."
+   start_time=$(get_timestamp_nano)
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+           "${F_PGPASSWORD}" \
+           "${F_UPDATE1}" >/dev/null || exit_on_error "failed to execute UPDATE 1."
+   end_time=$(get_timestamp_nano)
+   total_time1="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
+
+   process_log "testing SECOND UPDATE in postgresql."
+   start_time=$(get_timestamp_nano)
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+           "${F_PGPASSWORD}" \
+           "${F_UPDATE2}" >/dev/null || exit_on_error "failed to execute UPDATE 2."
+   end_time=$(get_timestamp_nano)
+   total_time2="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
+
+   process_log "testing THIRD UPDATE in postgresql."
+   start_time=$(get_timestamp_nano)
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+           "${F_PGPASSWORD}" \
+           "${F_UPDATE3}" >/dev/null || exit_on_error "failed to execute UPDATE 3."
+   end_time=$(get_timestamp_nano)
+   total_time3="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
+
+   AVG=$(( ($total_time1 + $total_time2 + $total_time3)/3 ))
+
+   echo "${AVG}"
+}

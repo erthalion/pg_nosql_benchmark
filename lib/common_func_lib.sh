@@ -473,3 +473,41 @@ function index_size ()
                                                     "${COLLECTION_NAME}"
                              )
 }
+
+################################################################################
+# update_time measure time for update queries
+################################################################################
+function update_time ()
+{
+   pg_update_time[${indx}]=$(pg_update_benchmark "${PGHOST}"    \
+                                            "${PGPORT}"         \
+                                            "${PGDATABASE}"     \
+                                            "${PGUSER}"         \
+                                            "${PGPASSWORD}"     \
+                                            "${COLLECTION_NAME}"
+                          )
+
+   pgjpo_update_time[${indx}]=$(pg_update_benchmark "${PGJPOHOST}"     \
+                                            "${PGJPOPORT}"             \
+                                            "${PGJPODATABASE}"         \
+                                            "${PGJPOUSER}"             \
+                                            "${PGJPOPASSWORD}"         \
+                                            "${COLLECTION_NAME}"
+                          )
+
+   mysql_update_time[${indx}]=$(mysql_update_benchmark "${MYSQLHOST}"     \
+                                            "${MYSQLPORT}"     \
+                                            "${MYSQLDATABASE}" \
+                                            "${MYSQLUSER}"     \
+                                            "${MYSQLPASSWORD}" \
+                                            "${COLLECTION_NAME}"
+                          )
+
+   mongo_update_time[${indx}]=$(mongo_update_benchmark "${MONGOHOST}"  \
+                                                    "${MONGOPORT}"     \
+                                                    "${MONGODBNAME}"   \
+                                                    "${MONGOUSER}"     \
+                                                    "${MONGOPASSWORD}" \
+                                                    "${COLLECTION_NAME}"
+                             )
+}

@@ -308,3 +308,47 @@ function mongodb_create_index ()
                      "${F_MONGOPASSWORD}" "${F_MONGODBIDX3}" >/dev/null
 
 }
+
+################################################################################
+# function: mongo_update_benchmark generate update query for json table
+################################################################################
+function mongo_update_benchmark ()
+{
+   F_MONGOHOST="$1"
+   F_MONGOPORT="$2"
+   F_MONGODBNAME="$3"
+   F_MONGOUSER="$4"
+   F_MONGOPASSWORD="$5"
+   F_COLLECTION="$6"
+   F_MONGOUPDATE1="db.${F_COLLECTION}.update({brand: 'ACME'}, {\$inc: {price: 100}})"
+   F_MONGOUPDATE2="db.${F_COLLECTION}.update({type: 'service'}, {\$set: {\"limits.data.over_rate\": 10}})"
+   F_MONGOUPDATE3="db.${F_COLLECTION}.update({type: 'service'}, {\$set: {\"limits.data.extra\": 'Extra Data'}})"
+
+   process_log "testing mongo FIRST UPDATE"
+   start_time=$(get_timestamp_nano)
+   run_mongo_command "${F_MONGOHOST}" "${MONGOPORT}" "${F_MONGODBNAME}" \
+                     "${F_MONGOUSER}" \
+                     "${F_MONGOPASSWORD}" "${F_MONGOUPDATE1}" >/dev/null
+   end_time=$(get_timestamp_nano)
+   total_time1="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
+
+   process_log "testing mongo SECOND UPDATE"
+   start_time=$(get_timestamp_nano)
+   run_mongo_command "${F_MONGOHOST}" "${MONGOPORT}" "${F_MONGODBNAME}" \
+                     "${F_MONGOUSER}" \
+                     "${F_MONGOPASSWORD}" "${F_MONGOUPDATE2}" >/dev/null
+   end_time=$(get_timestamp_nano)
+   total_time2="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
+
+   process_log "testing mongo THIRD UPDATE"
+   start_time=$(get_timestamp_nano)
+   run_mongo_command "${F_MONGOHOST}" "${MONGOPORT}" "${F_MONGODBNAME}" \
+                    "${F_MONGOUSER}" \
+                     "${F_MONGOPASSWORD}" "${F_MONGOUPDATE3}" >/dev/null
+   end_time=$(get_timestamp_nano)
+   total_time3="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
+
+   AVG="$(( ($total_time1 + $total_time2 + $total_time3)/3 ))"
+
+   echo "${AVG}"
+}

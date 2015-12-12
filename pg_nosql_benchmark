@@ -146,6 +146,7 @@ do
 
    insert_time
    select_time
+   update_time
    collection_size
    index_size
 
@@ -155,6 +156,7 @@ done
 print_result "number of rows"     "${json_rows[@]}"
 print_result "PG INSERT (ns)"     "${pg_inserts_time[@]}"
 print_result "PG SELECT (ns)"     "${pg_select_time[@]}"
+print_result "PG UPDATE (ns)"     "${pg_update_time[@]}"
 print_result "PG TABLE SIZE (bytes)"    "${pg_collection_size_time[@]}"
 print_result "PG INDEX SIZE (bytes)"    "${pg_index_size_time[@]}"
 
@@ -165,11 +167,13 @@ print_result "PGJPO INDEX SIZE (bytes)"    "${pgjpo_index_size_time[@]}"
 
 print_result "MYSQL INSERT (ns)"     "${mysql_inserts_time[@]}"
 print_result "MYSQL SELECT (ns)"     "${mysql_select_time[@]}"
+print_result "MYSQL UPDATE (ns)"     "${mysql_update_time[@]}"
 print_result "MYSQL TABLE SIZE (bytes)"    "${mysql_collection_size_time[@]}"
 print_result "MYSQL INDEX SIZE (bytes)"    "${mysql_index_size_time[@]}"
 
 print_result "MONGO INSERT (ns)"  "${mongo_inserts_time[@]}"
 print_result "MONGO SELECT (ns)"  "${mongo_select_time[@]}"
+print_result "MONGO UPDATE (ns)"     "${mongo_update_time[@]}"
 print_result "MONGO COLLECTION SIZE (bytes)" "${mongo_collection_size_time[@]}"
 print_result "MONGO INDEX SIZE (bytes)" "${mongo_index_size_time[@]}"
 
