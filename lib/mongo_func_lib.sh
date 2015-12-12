@@ -238,6 +238,27 @@ function mongo_collection_size ()
    echo "${collectionsize}"
 }
 
+################################################################################
+# function: mongdb index size
+################################################################################
+function mongo_index_size ()
+{
+   typeset -r F_MONGOHOST="$1"
+   typeset -r F_MONGOPORT="$2"
+   typeset -r F_MONGODBNAME="$3"
+   typeset -r F_MONGOUSER="$4"
+   typeset -r F_MONGOPASSWORD="$5"
+   typeset -r F_COLLECTION="$6"
+   typeset -r F_COMMAND="printjson(db.${F_COLLECTION}.stats())"
+
+   process_log "calculating the size of mongo collection."
+   output="$(run_mongo_command "${F_MONGOHOST}" "${F_MONGOPORT}"   \
+                               "${F_MONGODBNAME}" "${F_MONGOUSER}" \
+                               "${F_MONGOPASSWORD}" "${F_COMMAND}")"
+   indexsize="$(echo ${output}|awk -F"," '{print $(NF-5)}'|cut -d":" -f2)"
+
+   echo "${indexsize}"
+}
 
 ################################################################################
 # function: mongdb version

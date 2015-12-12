@@ -142,6 +142,24 @@ function pg_relation_size ()
 }
 
 ################################################################################
+# function: index_size (calculate postgresql index size)
+################################################################################
+function pg_index_size ()
+{
+   typeset -r F_PGHOST="$1"
+   typeset -r F_PGPORT="$2"
+   typeset -r F_DBNAME="$3"
+   typeset -r F_PGUSER="$4"
+   typeset -r F_PGPASSWORD="$5"
+   typeset -r F_RELATION="$6"
+   typeset -r F_SQL="SELECT pg_catalog.pg_relation_size('${F_RELATION}_idx');"
+
+   process_log "calculating PostgreSQL index size."
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+           "${F_PGPASSWORD}" "${F_SQL}"
+}
+
+################################################################################
 # function: check if database exists
 ################################################################################
 function if_dbexists ()

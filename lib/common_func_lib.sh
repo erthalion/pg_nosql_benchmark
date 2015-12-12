@@ -341,7 +341,7 @@ function insert_time ()
                                                     "${PGJPO_INSERTS}"
                               )
 
-   mysql_inserts_time[${indx}]=$(pg_inserts_benchmark  "${MYSQLHOST}"       \
+   mysql_inserts_time[${indx}]=$(mysql_inserts_benchmark  "${MYSQLHOST}"    \
                                                     "${MYSQLPORT}"          \
                                                     "${MYSQLDATABASE}"      \
                                                     "${MYSQLUSER}"          \
@@ -441,7 +441,7 @@ function collection_size ()
 ################################################################################
 function index_size ()
 {
-   pg_index_size_time[${indx}]=$(pg_relation_size "${PGHOST}"     \
+   pg_index_size_time[${indx}]=$(pg_index_size "${PGHOST}"     \
                                             "${PGPORT}"     \
                                             "${PGDATABASE}" \
                                             "${PGUSER}"     \
@@ -449,7 +449,7 @@ function index_size ()
                                             "${COLLECTION_NAME}"
                           )
 
-   pgjpo_index_size_time[${indx}]=$(pg_relation_size "${PGJPOHOST}"     \
+   pgjpo_index_size_time[${indx}]=$(pg_index_size "${PGJPOHOST}"     \
                                             "${PGJPOPORT}"     \
                                             "${PGJPODATABASE}" \
                                             "${PGJPOUSER}"     \
@@ -465,7 +465,7 @@ function index_size ()
                                             "${COLLECTION_NAME}"
                           )
 
-   mongo_index_size_time[${indx}]=$(mongo_collection_size "${MONGOHOST}"     \
+   mongo_index_size_time[${indx}]=$(mongo_index_size "${MONGOHOST}"     \
                                                     "${MONGOPORT}"     \
                                                     "${MONGODBNAME}"   \
                                                     "${MONGOUSER}"     \
