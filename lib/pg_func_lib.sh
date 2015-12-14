@@ -124,6 +124,29 @@ function create_pg_db ()
 }
 
 ################################################################################
+# function: create_pgdb (create postgresql database)
+################################################################################
+function create_pgjsquery_db ()
+{
+   typeset -r F_PGHOST="$1"
+   typeset -r F_PGPORT="$2"
+   typeset -r F_DBNAME="$3"
+   typeset -r F_PGUSER="$4"
+   typeset -r F_PGPASSWORD="$5"
+   typeset -r F_SQL="CREATE DATABASE ${F_DBNAME};"
+   typeset -r F_JSQUERYSQL="CREATE EXTENSION jsquery;"
+
+   process_log "creating database ${F_DBNAME}."
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "postgres" "${F_PGUSER}" \
+           "${F_PGPASSWORD}" "${F_SQL}"
+
+   process_log "creating jsquery extension."
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+           "${F_PGPASSWORD}" "${F_JSQUERYSQL}"
+
+}
+
+################################################################################
 # function: relation_size (calculate postgresql relation size)
 ################################################################################
 function pg_relation_size ()

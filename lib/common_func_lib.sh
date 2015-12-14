@@ -148,7 +148,6 @@ function print_result()
    printf "\n"
 }
 
-
 ################################################################################
 # version get versions of used databases
 ################################################################################
@@ -156,28 +155,28 @@ function version ()
 {
     pg_version=$(pg_version "${PGHOST}"          \
                             "${PGPORT}"          \
-                            "${PGDATABASE}"      \
+                            "${PGUSER}"          \
                             "${PGUSER}"          \
                             "${PGPASSWORD}"
                 )
 
     pg_version_jpo=$(pg_version "${PGJPOHOST}"      \
                             "${PGJPOPORT}"          \
-                            "${PGJPODATABASE}"      \
+                            "${PGJPOUSER}"          \
                             "${PGJPOUSER}"          \
                             "${PGJPOPASSWORD}"
                 )
 
-    pg_version_jsquery=$(pg_version "${PGJSQUERYHOST}"      \
+    pg_version_jsquery=$(pg_version "${PGJSQUERYHOST}"  \
                             "${PGJSQUERYPORT}"          \
-                            "${PGJSQUERYDATABASE}"      \
+                            "${PGJSQUERYUSER}"          \
                             "${PGJSQUERYUSER}"          \
                             "${PGJSQUERYPASSWORD}"
                 )
 
-    mysql_version=$(mysql_version "${MYSQLHOST}"     \
+    mysql_version=$(mysql_version "${MYSQLHOST}"    \
                             "${MYSQLPORT}"          \
-                            ""                 \
+                            ""                      \
                             "${MYSQLUSER}"          \
                             "${MYSQLPASSWORD}"
                 )
@@ -189,7 +188,7 @@ function version ()
                                     "${MONGOPASSWORD}"
                       )
 
-    mongodb_version_nowt=$(mongo_version "${MONGONOWTHOST}"     \
+    mongodb_version_nowt=$(mongo_version "${MONGONOWTHOST}"\
                                     "${MONGONOWTPORT}"     \
                                     "${MONGONOWTDBNAME}"   \
                                     "${MONGONOWTUSER}"     \
@@ -276,10 +275,10 @@ function create_db ()
                 "${PGJPOUSER}"     \
                 "${PGJPOPASSWORD}"
 
-   create_pg_db "${PGJSQUERYHOST}"     \
-                "${PGJSQUERYPORT}"     \
-                "${PGJSQUERYDATABASE}" \
-                "${PGJSQUERYUSER}"     \
+   create_pgjsquery_db "${PGJSQUERYHOST}"     \
+                "${PGJSQUERYPORT}"            \
+                "${PGJSQUERYDATABASE}"        \
+                "${PGJSQUERYUSER}"            \
                 "${PGJSQUERYPASSWORD}"
 
    create_mysql_db "${MYSQLHOST}"  \
@@ -452,11 +451,11 @@ function select_time ()
                                                  "${COLLECTION_NAME}"
                             )
 
-   pgjsquery_select_time[${indx}]=$(pgjsquery_select_benchmark "${PGJPOHOST}"     \
-                                                 "${PGJPOPORT}"     \
-                                                 "${PGJPODATABASE}" \
-                                                 "${PGJPOUSER}"     \
-                                                 "${PGJPOPASSWORD}" \
+   pgjsquery_select_time[${indx}]=$(pgjsquery_select_benchmark "${PGJSQUERYHOST}"     \
+                                                 "${PGJSQUERYPORT}"     \
+                                                 "${PGJSQUERYDATABASE}" \
+                                                 "${PGJSQUERYUSER}"     \
+                                                 "${PGJSQUERYPASSWORD}" \
                                                  "${COLLECTION_NAME}"
                             )
 

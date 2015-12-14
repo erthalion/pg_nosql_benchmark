@@ -42,59 +42,59 @@
 DIRECTORY=$(dirname $0)
 BASENAME=$(basename $0)
 
-PGHOME="/home/erthalion/build/postgresql-9.5"
-PGHOST="localhost"
+PGHOME="/usr/lib/postgresql/9.5/"
+PGHOST="host"
 PGPORT="5432"
-PGUSER="erthalion"
-PGPASSWORD=""
+PGUSER="test"
+PGPASSWORD="'123456'"
 PGDATABASE="benchmark"
 
-PGBIN="/home/erthalion/build/postgresql-9.5"
+PGBIN="/usr/lib/postgresql/9.5/bin/"
 
-PGJPOHOME="/home/erthalion/build/postgresql-9.5"
-PGJPOHOST="localhost"
+PGJPOHOME="/usr/lib/postgresql/9.5/"
+PGJPOHOST="host"
 PGJPOPORT="5432"
-PGJPOUSER="erthalion"
-PGJPOPASSWORD=""
+PGJPOUSER="test"
+PGJPOPASSWORD="'123456'"
 PGJPODATABASE="benchmark"
 
-PGJPOBIN="/home/erthalion/build/postgresql-9.5"
+PGJPOBIN="/usr/lib/postgresql/9.5/bin/"
 
-PGJSQUERYHOME="/home/erthalion/build/postgresql-9.5"
-PGJSQUERYHOST="localhost"
+PGJSQUERYHOME="/usr/lib/postgresql/9.5/"
+PGJSQUERYHOST="host"
 PGJSQUERYPORT="5432"
-PGJSQUERYUSER="erthalion"
-PGJSQUERYPASSWORD=""
+PGJSQUERYUSER="test"
+PGJSQUERYPASSWORD="'123456'"
 PGJSQUERYDATABASE="benchmark"
 
-PGJSQUERYBIN="/home/erthalion/build/postgresql-9.5"
+PGJSQUERYBIN="/usr/lib/postgresql/9.5/bin/"
 
 ################################################################################
 # set mysql variables.
 ################################################################################
-MYSQLHOME="/home/erthalion/build/mysql/"
-MYSQLHOST="localhost"
+MYSQLHOME="/usr"
+MYSQLHOST="host"
 MYSQLPORT="3306"
-MYSQLUSER="root"
-MYSQLPASSWORD=""
+MYSQLUSER="test"
+MYSQLPASSWORD="123456"
 MYSQLDATABASE="benchmark"
 
-MYSQLBIN="/home/erthalion/build/mysql/bin"
+MYSQLBIN="mysql"
 
 ################################################################################
 # set mongo variables.
 ################################################################################
-MONGO="/home/erthalion/build/mongodb-linux-x86_64-3.2.0/bin/mongo"
-MONGOIMPORT="/home/erthalion/build/mongodb-linux-x86_64-3.2.0/bin/mongoimport"
-MONGOHOST="localhost"
+MONGO="/home/ubuntu/mongo/bin/mongo"
+MONGOIMPORT="/home/ubuntu/mongo/bin/mongoimport"
+MONGOHOST="host"
 MONGOPORT="27017"
 MONGOUSER="mongo"
 MONGOPASSWORD="mongo"
 MONGODBNAME="benchmark"
 
-MONGONOWT="/home/erthalion/build/mongodb-linux-x86_64-3.2.0/bin/mongo"
-MONGONOWTIMPORT="/home/erthalion/build/mongodb-linux-x86_64-3.2.0/bin/mongoimport"
-MONGONOWTHOST="localhost"
+MONGONOWT="/home/ubuntu/mongo/bin/mongo"
+MONGONOWTIMPORT="/home/ubuntu/mongo/bin/mongoimport"
+MONGONOWTHOST="host"
 MONGONOWTPORT="27017"
 MONGONOWTUSER="mongo"
 MONGONOWTPASSWORD="mongo"
@@ -122,7 +122,7 @@ source ${DIRECTORY}/lib/mongo_func_lib.sh
 ################################################################################
 # declare require arrays
 ################################################################################
-declare -a json_rows=(10)
+declare -a json_rows=(1000000)
 
 declare -a pg_collection_size_time
 declare -a pg_index_size_time
