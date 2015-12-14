@@ -60,10 +60,19 @@ PGJPODATABASE="benchmark"
 
 PGJPOBIN="/home/erthalion/build/postgresql-9.5"
 
+PGJSQUERYHOME="/home/erthalion/build/postgresql-9.5"
+PGJSQUERYHOST="localhost"
+PGJSQUERYPORT="5432"
+PGJSQUERYUSER="erthalion"
+PGJSQUERYPASSWORD=""
+PGJSQUERYDATABASE="benchmark"
+
+PGJSQUERYBIN="/home/erthalion/build/postgresql-9.5"
+
 ################################################################################
 # set mysql variables.
 ################################################################################
-MYSQLHOME="/home/erthalion/build/mysql"
+MYSQLHOME="/home/erthalion/build/mysql/"
 MYSQLHOST="localhost"
 MYSQLPORT="3306"
 MYSQLUSER="root"
@@ -75,20 +84,30 @@ MYSQLBIN="/home/erthalion/build/mysql/bin"
 ################################################################################
 # set mongo variables.
 ################################################################################
-MONGO="/usr/bin/mongo"
-MONGOIMPORT="/usr/bin/mongoimport"
-MONGOHOST="172.17.0.3"
+MONGO="/home/erthalion/build/mongodb-linux-x86_64-3.2.0/bin/mongo"
+MONGOIMPORT="/home/erthalion/build/mongodb-linux-x86_64-3.2.0/bin/mongoimport"
+MONGOHOST="localhost"
 MONGOPORT="27017"
 MONGOUSER="mongo"
 MONGOPASSWORD="mongo"
 MONGODBNAME="benchmark"
 
+MONGONOWT="/home/erthalion/build/mongodb-linux-x86_64-3.2.0/bin/mongo"
+MONGONOWTIMPORT="/home/erthalion/build/mongodb-linux-x86_64-3.2.0/bin/mongoimport"
+MONGONOWTHOST="localhost"
+MONGONOWTPORT="27017"
+MONGONOWTUSER="mongo"
+MONGONOWTPASSWORD="mongo"
+MONGONOWTDBNAME="benchmark"
+
 COLLECTION_NAME="json_tables"
 SAMPLEJSON="sample.json"
 PG_INSERTS="sample_pg_inserts.json"
 PGJPO_INSERTS="sample_pg_inserts.json"
+PGJSQUERY_INSERTS="sample_pg_inserts.json"
 MYSQL_INSERTS="sample_mysql_inserts.json"
 MONGO_INSERTS="sample_mongo_inserts.json"
+MONGONOWT_INSERTS="sample_mongo_inserts.json"
 
 export PATH=$PGBIN:$PATH
 
@@ -127,10 +146,12 @@ declare -a mongo_select_time
 ################################################################################
 version
 
-process_log "MongoDB Version $mongodb_version"
 process_log "PostgreSQL with GIN index Version $pg_version"
 process_log "PostgreSQL with jsonb_path_ops index Version $pg_version_jpo"
+process_log "PostgreSQL with jsquery Version $pg_version_jsquery"
 process_log "Mysql Version $mysql_version"
+process_log "MongoDB Version $mongodb_version"
+process_log "MongoDB without WiredTiger Version $mongodb_version_nowt"
 
 
 for (( indx=0 ; indx < ${#json_rows[@]} ; indx++ ))
@@ -162,8 +183,15 @@ print_result "PG INDEX SIZE (bytes)"    "${pg_index_size_time[@]}"
 
 print_result "PGJPO INSERT (ns)"     "${pgjpo_inserts_time[@]}"
 print_result "PGJPO SELECT (ns)"     "${pgjpo_select_time[@]}"
+print_result "PGJPO UPDATE (ns)"     "${pgjpo_update_time[@]}"
 print_result "PGJPO TABLE SIZE (bytes)"    "${pgjpo_collection_size_time[@]}"
 print_result "PGJPO INDEX SIZE (bytes)"    "${pgjpo_index_size_time[@]}"
+
+print_result "PGJSQUERY INSERT (ns)"     "${pgjsquery_inserts_time[@]}"
+print_result "PGJSQUERY SELECT (ns)"     "${pgjsquery_select_time[@]}"
+print_result "PGJSQUERY UPDATE (ns)"     "${pgjsquery_update_time[@]}"
+print_result "PGJSQUERY TABLE SIZE (bytes)"    "${pgjsquery_collection_size_time[@]}"
+print_result "PGJSQUERY INDEX SIZE (bytes)"    "${pgjsquery_index_size_time[@]}"
 
 print_result "MYSQL INSERT (ns)"     "${mysql_inserts_time[@]}"
 print_result "MYSQL SELECT (ns)"     "${mysql_select_time[@]}"
@@ -176,6 +204,14 @@ print_result "MONGO SELECT (ns)"  "${mongo_select_time[@]}"
 print_result "MONGO UPDATE (ns)"     "${mongo_update_time[@]}"
 print_result "MONGO COLLECTION SIZE (bytes)" "${mongo_collection_size_time[@]}"
 print_result "MONGO INDEX SIZE (bytes)" "${mongo_index_size_time[@]}"
+
+print_result "MONGONOWT INSERT (ns)"  "${mongonowt_inserts_time[@]}"
+print_result "MONGONOWT SELECT (ns)"  "${mongonowt_select_time[@]}"
+print_result "MONGONOWT UPDATE (ns)"     "${mongonowt_update_time[@]}"
+print_result "MONGONOWT COLLECTION SIZE (bytes)" "${mongonowt_collection_size_time[@]}"
+print_result "MONGONOWT INDEX SIZE (bytes)" "${mongonowt_index_size_time[@]}"
+
+save_results
 
 rm -rf ${SAMPLEJSON}*
 rm -rf ${PG_INSERTS}

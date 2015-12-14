@@ -168,6 +168,13 @@ function version ()
                             "${PGJPOPASSWORD}"
                 )
 
+    pg_version_jsquery=$(pg_version "${PGJSQUERYHOST}"      \
+                            "${PGJSQUERYPORT}"          \
+                            "${PGJSQUERYDATABASE}"      \
+                            "${PGJSQUERYUSER}"          \
+                            "${PGJSQUERYPASSWORD}"
+                )
+
     mysql_version=$(mysql_version "${MYSQLHOST}"     \
                             "${MYSQLPORT}"          \
                             ""                 \
@@ -182,6 +189,12 @@ function version ()
                                     "${MONGOPASSWORD}"
                       )
 
+    mongodb_version_nowt=$(mongo_version "${MONGONOWTHOST}"     \
+                                    "${MONGONOWTPORT}"     \
+                                    "${MONGONOWTDBNAME}"   \
+                                    "${MONGONOWTUSER}"     \
+                                    "${MONGONOWTPASSWORD}"
+                      )
 }
 
 ################################################################################
@@ -219,6 +232,12 @@ function remove_db ()
                 "${PGJPOUSER}"     \
                 "${PGJPOPASSWORD}"
 
+   remove_pg_db "${PGJSQUERYHOST}"     \
+                "${PGJSQUERYPORT}"     \
+                "${PGJSQUERYDATABASE}" \
+                "${PGJSQUERYUSER}"     \
+                "${PGJSQUERYPASSWORD}"
+
    remove_mysql_db "${MYSQLHOST}"  \
                 "${MYSQLPORT}"     \
                 "${MYSQLDATABASE}" \
@@ -230,6 +249,13 @@ function remove_db ()
                         "${MONGODBNAME}"   \
                         "${MONGOUSER}"     \
                         "${MONGOPASSWORD}" \
+                        "${COLLECTION_NAME}"
+
+   drop_mongocollection "${MONGONOWTHOST}"     \
+                        "${MONGONOWTPORT}"     \
+                        "${MONGONOWTDBNAME}"   \
+                        "${MONGONOWTUSER}"     \
+                        "${MONGONOWTPASSWORD}" \
                         "${COLLECTION_NAME}"
 }
 
@@ -249,6 +275,12 @@ function create_db ()
                 "${PGJPODATABASE}" \
                 "${PGJPOUSER}"     \
                 "${PGJPOPASSWORD}"
+
+   create_pg_db "${PGJSQUERYHOST}"     \
+                "${PGJSQUERYPORT}"     \
+                "${PGJSQUERYDATABASE}" \
+                "${PGJSQUERYUSER}"     \
+                "${PGJSQUERYPASSWORD}"
 
    create_mysql_db "${MYSQLHOST}"  \
                 "${MYSQLPORT}"     \
@@ -274,6 +306,13 @@ function mk_json_collection ()
                          "${PGJPODATABASE}" \
                          "${PGJPOUSER}"     \
                          "${PGJPOPASSWORD}" \
+                         "${COLLECTION_NAME}"
+
+   mk_pg_json_collection "${PGJSQUERYHOST}"     \
+                         "${PGJSQUERYPORT}"     \
+                         "${PGJSQUERYDATABASE}" \
+                         "${PGJSQUERYUSER}"     \
+                         "${PGJSQUERYPASSWORD}" \
                          "${COLLECTION_NAME}"
 
    mk_mysql_json_collection "${MYSQLHOST}"  \
@@ -303,6 +342,13 @@ function create_index ()
                               "${PGJPOPASSWORD}" \
                               "${COLLECTION_NAME}"
 
+   pg_create_jpo_index_collection "${PGJSQUERYHOST}" \
+                              "${PGJSQUERYPORT}"     \
+                              "${PGJSQUERYDATABASE}" \
+                              "${PGJSQUERYUSER}"     \
+                              "${PGJSQUERYPASSWORD}" \
+                              "${COLLECTION_NAME}"
+
    mysql_create_index_collection "${MYSQLHOST}" \
                               "${MYSQLPORT}"        \
                               "${MYSQLDATABASE}"    \
@@ -315,6 +361,13 @@ function create_index ()
                         "${MONGODBNAME}"   \
                         "${MONGOUSER}"     \
                         "${MONGOPASSWORD}" \
+                        "${COLLECTION_NAME}"
+
+   mongodb_create_index "${MONGONOWTHOST}"     \
+                        "${MONGONOWTPORT}"     \
+                        "${MONGONOWTDBNAME}"   \
+                        "${MONGONOWTUSER}"     \
+                        "${MONGONOWTPASSWORD}" \
                         "${COLLECTION_NAME}"
 }
 
@@ -341,6 +394,15 @@ function insert_time ()
                                                     "${PGJPO_INSERTS}"
                               )
 
+   pgjsquery_inserts_time[${indx}]=$(pg_inserts_benchmark  "${PGJSQUERYHOST}"          \
+                                                    "${PGJSQUERYPORT}"          \
+                                                    "${PGJSQUERYDATABASE}"      \
+                                                    "${PGJSQUERYUSER}"          \
+                                                    "${PGJSQUERYPASSWORD}"      \
+                                                    "${COLLECTION_NAME}" \
+                                                    "${PGJSQUERY_INSERTS}"
+                              )
+
    mysql_inserts_time[${indx}]=$(mysql_inserts_benchmark  "${MYSQLHOST}"    \
                                                     "${MYSQLPORT}"          \
                                                     "${MYSQLDATABASE}"      \
@@ -358,6 +420,15 @@ function insert_time ()
                                                            "${COLLECTION_NAME}" \
                                                             "${MONGO_INSERTS}"
                                 )
+
+   mongonowt_inserts_time[${indx}]=$(mongodb_inserts_benchmark "${MONGONOWTHOST}"       \
+                                                           "${MONGONOWTPORT}"       \
+                                                           "${MONGONOWTDBNAME}"     \
+                                                           "${MONGONOWTUSER}"       \
+                                                           "${MONGONOWTPASSWORD}"   \
+                                                           "${COLLECTION_NAME}" \
+                                                            "${MONGONOWT_INSERTS}"
+                                )
 }
 
 ################################################################################
@@ -373,7 +444,15 @@ function select_time ()
                                                  "${COLLECTION_NAME}"
                              )
 
-   pgjpo_select_time[${indx}]=$(pg_select_benchmark "${PGJPOHOST}"     \
+   pgjpo_select_time[${indx}]=$(pgjpo_select_benchmark "${PGJSQUERYHOST}"     \
+                                                 "${PGJSQUERYPORT}"     \
+                                                 "${PGJSQUERYDATABASE}" \
+                                                 "${PGJSQUERYUSER}"     \
+                                                 "${PGJSQUERYPASSWORD}" \
+                                                 "${COLLECTION_NAME}"
+                            )
+
+   pgjsquery_select_time[${indx}]=$(pgjsquery_select_benchmark "${PGJPOHOST}"     \
                                                  "${PGJPOPORT}"     \
                                                  "${PGJPODATABASE}" \
                                                  "${PGJPOUSER}"     \
@@ -394,6 +473,14 @@ function select_time ()
                                                          "${MONGODBNAME}"   \
                                                          "${MONGOUSER}"     \
                                                          "${MONGOPASSWORD}" \
+                                                         "${COLLECTION_NAME}"
+                                )
+
+   mongonowt_select_time[${indx}]=$(mongodb_select_benchmark "${MONGONOWTHOST}"     \
+                                                         "${MONGONOWTPORT}"     \
+                                                         "${MONGONOWTDBNAME}"   \
+                                                         "${MONGONOWTUSER}"     \
+                                                         "${MONGONOWTPASSWORD}" \
                                                          "${COLLECTION_NAME}"
                                 )
 }
@@ -419,6 +506,14 @@ function collection_size ()
                                             "${COLLECTION_NAME}"
                           )
 
+   pgjsquery_collection_size_time[${indx}]=$(pg_relation_size "${PGJSQUERYHOST}"     \
+                                            "${PGJSQUERYPORT}"     \
+                                            "${PGJSQUERYDATABASE}" \
+                                            "${PGJSQUERYUSER}"     \
+                                            "${PGJSQUERYPASSWORD}" \
+                                            "${COLLECTION_NAME}"
+                          )
+
    mysql_collection_size_time[${indx}]=$(mysql_relation_size "${MYSQLHOST}"     \
                                             "${MYSQLPORT}"     \
                                             "${MYSQLDATABASE}" \
@@ -432,6 +527,14 @@ function collection_size ()
                                                     "${MONGODBNAME}"   \
                                                     "${MONGOUSER}"     \
                                                     "${MONGOPASSWORD}" \
+                                                    "${COLLECTION_NAME}"
+                             )
+
+   mongonowt_collection_size_time[${indx}]=$(mongo_collection_size "${MONGONOWTHOST}"     \
+                                                    "${MONGONOWTPORT}"     \
+                                                    "${MONGONOWTDBNAME}"   \
+                                                    "${MONGONOWTUSER}"     \
+                                                    "${MONGONOWTPASSWORD}" \
                                                     "${COLLECTION_NAME}"
                              )
 }
@@ -457,6 +560,14 @@ function index_size ()
                                             "${COLLECTION_NAME}"
                           )
 
+   pgjsquery_index_size_time[${indx}]=$(pg_index_size "${PGJSQUERYHOST}"     \
+                                            "${PGJSQUERYPORT}"     \
+                                            "${PGJSQUERYDATABASE}" \
+                                            "${PGJSQUERYUSER}"     \
+                                            "${PGJSQUERYPASSWORD}" \
+                                            "${COLLECTION_NAME}"
+                          )
+
    mysql_index_size_time[${indx}]=$(mysql_index_size "${MYSQLHOST}"     \
                                             "${MYSQLPORT}"     \
                                             "${MYSQLDATABASE}" \
@@ -470,6 +581,14 @@ function index_size ()
                                                     "${MONGODBNAME}"   \
                                                     "${MONGOUSER}"     \
                                                     "${MONGOPASSWORD}" \
+                                                    "${COLLECTION_NAME}"
+                             )
+
+   mongonowt_index_size_time[${indx}]=$(mongo_index_size "${MONGONOWTHOST}"     \
+                                                    "${MONGONOWTPORT}"     \
+                                                    "${MONGONOWTDBNAME}"   \
+                                                    "${MONGONOWTUSER}"     \
+                                                    "${MONGONOWTPASSWORD}" \
                                                     "${COLLECTION_NAME}"
                              )
 }
@@ -495,6 +614,14 @@ function update_time ()
                                             "${COLLECTION_NAME}"
                           )
 
+   pgjsquery_update_time[${indx}]=$(pg_update_benchmark "${PGJSQUERYHOST}"     \
+                                            "${PGJSQUERYPORT}"             \
+                                            "${PGJSQUERYDATABASE}"         \
+                                            "${PGJSQUERYUSER}"             \
+                                            "${PGJSQUERYPASSWORD}"         \
+                                            "${COLLECTION_NAME}"
+                          )
+
    mysql_update_time[${indx}]=$(mysql_update_benchmark "${MYSQLHOST}"     \
                                             "${MYSQLPORT}"     \
                                             "${MYSQLDATABASE}" \
@@ -510,4 +637,64 @@ function update_time ()
                                                     "${MONGOPASSWORD}" \
                                                     "${COLLECTION_NAME}"
                              )
+
+   mongonowt_update_time[${indx}]=$(mongo_update_benchmark "${MONGONOWTHOST}"  \
+                                                    "${MONGONOWTPORT}"     \
+                                                    "${MONGONOWTDBNAME}"   \
+                                                    "${MONGONOWTUSER}"     \
+                                                    "${MONGONOWTPASSWORD}" \
+                                                    "${COLLECTION_NAME}"
+                             )
+}
+
+################################################################################
+# save_results save benchmark data on disk in json format
+################################################################################
+function save_results ()
+{
+    echo "{
+        \"number_of_rows\": ${json_rows[@]},
+        \"PG\": {
+           \"insert\": ${pg_inserts_time[@]},
+           \"select\": ${pg_select_time[@]},
+           \"update\": ${pg_update_time[@]},
+           \"table_size\": ${pg_collection_size_time[@]},
+           \"index_size\": ${pg_index_size_time[@]}
+        },
+        \"PGJPO\": {
+           \"insert\": ${pgjpo_inserts_time[@]},
+           \"select\": ${pgjpo_select_time[@]},
+           \"update\": ${pgjpo_update_time[@]},
+           \"table_size\": ${pgjpo_collection_size_time[@]},
+           \"index_size\": ${pgjpo_index_size_time[@]}
+        },
+        \"PGJSQUERY\": {
+           \"insert\": ${pgjsquery_inserts_time[@]},
+           \"select\": ${pgjsquery_select_time[@]},
+           \"update\": ${pgjsquery_update_time[@]},
+           \"table_size\": ${pgjsquery_collection_size_time[@]},
+           \"index_size\": ${pgjsquery_index_size_time[@]}
+        },
+        \"MYSQL\": {
+           \"insert\": ${mysql_inserts_time[@]},
+           \"select\": ${mysql_select_time[@]},
+           \"update\": ${mysql_update_time[@]},
+           \"table_size\": ${mysql_collection_size_time[@]},
+           \"index_size\": ${mysql_index_size_time[@]}
+        },
+        \"MONGO\": {
+           \"insert\": ${mongo_inserts_time[@]},
+           \"select\": ${mongo_select_time[@]},
+           \"update\": ${mongo_update_time[@]},
+           \"table_size\": ${mongo_collection_size_time[@]},
+           \"index_size\": ${mongo_index_size_time[@]}
+        },
+        \"MONGONOWT\": {
+           \"insert\": ${mongonowt_inserts_time[@]},
+           \"select\": ${mongonowt_select_time[@]},
+           \"update\": ${mongonowt_update_time[@]},
+           \"table_size\": ${mongonowt_collection_size_time[@]},
+           \"index_size\": ${mongonowt_index_size_time[@]}
+        }
+    }" > benchmark_$(date +%F-%T).json
 }

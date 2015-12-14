@@ -267,6 +267,27 @@ function pg_create_jpo_index_collection ()
 }
 
 ################################################################################
+# function: pg_create_jsquery_index create index for jsquery
+################################################################################
+function pg_create_jsquery_index_collection ()
+{
+   typeset -r F_PGHOST="$1"
+   typeset -r F_PGPORT="$2"
+   typeset -r F_DBNAME="$3"
+   typeset -r F_PGUSER="$4"
+   typeset -r F_PGPASSWORD="$5"
+   typeset -r F_TABLE="$6"
+
+   pg_create_index_collection "${F_PGHOST}" \
+                              "${F_PGPORT}" \
+                              "${F_DBNAME}" \
+                              "${F_PGUSER}" \
+                              "${F_PGPASSWORD}" \
+                              "${F_TABLE}" \
+                              "jsonb_path_value_ops" # no special index options
+}
+
+################################################################################
 # function: delete_json_data delete json data in PG
 ################################################################################
 function delete_json_data ()
@@ -398,6 +419,132 @@ function pg_select_benchmark ()
 
    echo "${AVG}"
 }
+
+################################################################################
+# function: benchmark postgresql select for jsonb_path_ops
+################################################################################
+function pgjpo_select_benchmark ()
+{
+   typeset -r F_PGHOST="$1"
+   typeset -r F_PGPORT="$2"
+   typeset -r F_DBNAME="$3"
+   typeset -r F_PGUSER="$4"
+   typeset -r F_PGPASSWORD="$5"
+   typeset -r F_COLLECTION="$6"
+   typeset -r F_SELECT1="SELECT data
+                         FROM ${F_COLLECTION}
+                           WHERE  data @> '{\"brand\": \"ACME\"}';"
+   typeset -r F_SELECT2="SELECT data
+                         FROM ${F_COLLECTION}
+                           WHERE  data @> '{\"name\": \"Phone Service Basic Plan\"}';"
+   typeset -r F_SELECT3="SELECT data
+                         FROM ${F_COLLECTION}
+                          WHERE  data @> '{\"name\": \"AC3 Case Red\"}';"
+   typeset -r F_SELECT4="SELECT data
+                          FROM ${F_COLLECTION}
+                            WHERE  data @> '{\"type\": \"service\"}';"
+   local START end_time
+
+   process_log "testing FIRST SELECT in postgresql."
+   start_time=$(get_timestamp_nano)
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+           "${F_PGPASSWORD}" \
+           "${F_SELECT1}" >/dev/null || exit_on_error "failed to execute SELECT 1."
+   end_time=$(get_timestamp_nano)
+   total_time1="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
+
+   process_log "testing SECOND SELECT in postgresql."
+   start_time=$(get_timestamp_nano)
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+           "${F_PGPASSWORD}" \
+           "${F_SELECT2}" >/dev/null || exit_on_error "failed to execute SELECT 2."
+   end_time=$(get_timestamp_nano)
+   total_time2="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
+
+   process_log "testing THIRD SELECT in postgresql."
+   start_time=$(get_timestamp_nano)
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+           "${F_PGPASSWORD}" \
+           "${F_SELECT3}" >/dev/null || exit_on_error "failed to execute SELECT 3."
+   end_time=$(get_timestamp_nano)
+   total_time3="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
+
+   process_log "testing FOURTH SELECT in postgresql."
+   start_time=$(get_timestamp_nano)
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+           "${F_PGPASSWORD}" \
+           "${F_SELECT4}" >/dev/null || exit_on_error "failed to execute SELECT 4."
+   end_time=$(get_timestamp_nano)
+   total_time4="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
+
+   AVG=$(( ($total_time1 + $total_time2 + $total_time3 + $total_time4 )/4 ))
+
+   echo "${AVG}"
+}
+
+################################################################################
+# function: benchmark postgresql select for jsquery
+################################################################################
+function pgjsquery_select_benchmark ()
+{
+   typeset -r F_PGHOST="$1"
+   typeset -r F_PGPORT="$2"
+   typeset -r F_DBNAME="$3"
+   typeset -r F_PGUSER="$4"
+   typeset -r F_PGPASSWORD="$5"
+   typeset -r F_COLLECTION="$6"
+   typeset -r F_SELECT1="SELECT data
+                         FROM ${F_COLLECTION}
+                           WHERE  data @@ 'brand = \"ACME\"';"
+   typeset -r F_SELECT2="SELECT data
+                         FROM ${F_COLLECTION}
+                           WHERE  data @@ 'name = \"Phone Service Basic Plan\"';"
+   typeset -r F_SELECT3="SELECT data
+                         FROM ${F_COLLECTION}
+                           WHERE  data @@ 'name = \"AC3 Case Red\"';"
+   typeset -r F_SELECT4="SELECT data
+                          FROM ${F_COLLECTION}
+                           WHERE  data @@ 'type = \"service\"';"
+   local START end_time
+
+   process_log "testing FIRST SELECT in postgresql."
+   start_time=$(get_timestamp_nano)
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+           "${F_PGPASSWORD}" \
+           "${F_SELECT1}" >/dev/null || exit_on_error "failed to execute SELECT 1."
+   end_time=$(get_timestamp_nano)
+   total_time1="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
+
+   process_log "testing SECOND SELECT in postgresql."
+   start_time=$(get_timestamp_nano)
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+           "${F_PGPASSWORD}" \
+           "${F_SELECT2}" >/dev/null || exit_on_error "failed to execute SELECT 2."
+   end_time=$(get_timestamp_nano)
+   total_time2="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
+
+   process_log "testing THIRD SELECT in postgresql."
+   start_time=$(get_timestamp_nano)
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+           "${F_PGPASSWORD}" \
+           "${F_SELECT3}" >/dev/null || exit_on_error "failed to execute SELECT 3."
+   end_time=$(get_timestamp_nano)
+   total_time3="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
+
+   process_log "testing FOURTH SELECT in postgresql."
+   start_time=$(get_timestamp_nano)
+   pg_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+           "${F_PGPASSWORD}" \
+           "${F_SELECT4}" >/dev/null || exit_on_error "failed to execute SELECT 4."
+   end_time=$(get_timestamp_nano)
+   total_time4="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
+
+   AVG=$(( ($total_time1 + $total_time2 + $total_time3 + $total_time4 )/4 ))
+
+   echo "${AVG}"
+}
+
+
 
 ################################################################################
 # function: mk_pgjson_collection create json table in PG
