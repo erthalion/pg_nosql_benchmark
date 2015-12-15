@@ -411,23 +411,48 @@ function insert_time ()
                                                     "${MYSQL_INSERTS}"
                               )
 
-   mongo_inserts_time[${indx}]=$(mongodb_inserts_benchmark "${MONGOHOST}"       \
-                                                           "${MONGOPORT}"       \
-                                                           "${MONGODBNAME}"     \
-                                                           "${MONGOUSER}"       \
-                                                           "${MONGOPASSWORD}"   \
-                                                           "${COLLECTION_NAME}" \
-                                                            "${MONGO_INSERTS}"
-                                )
 
-   mongonowt_inserts_time[${indx}]=$(mongodb_inserts_benchmark "${MONGONOWTHOST}"       \
-                                                           "${MONGONOWTPORT}"       \
-                                                           "${MONGONOWTDBNAME}"     \
-                                                           "${MONGONOWTUSER}"       \
-                                                           "${MONGONOWTPASSWORD}"   \
-                                                           "${COLLECTION_NAME}" \
-                                                            "${MONGONOWT_INSERTS}"
-                                )
+   # Unfortunatelly, our data generator prodices several type of records,
+   # which are large than a buffer size of mongo shell
+   # (see https://github.com/mongodb/mongo/blob/master/src/mongo/shell/linenoise.cpp#L144)
+   # As a workaround we're generating inserts as a js file, but still there is one gotcha - 
+   # we can't load large js files (see https://jira.mongodb.org/browse/SERVER-15032).
+   # To avoid this, we split one js file into small chunks. Looks like a dirty hack.
+   mongo_inserts_time[${indx}]=0
+   split --lines=100000 ${MONGO_INSERTS} mongo_insert_parts.
+   for sample in mongo_insert_parts.*
+   do
+       total=mongo_inserts_time[${indx}]
+       new_time=$(mongodb_inserts_benchmark "${MONGOHOST}"       \
+                                            "${MONGOPORT}"       \
+                                            "${MONGODBNAME}"     \
+                                            "${MONGOUSER}"       \
+                                            "${MONGOPASSWORD}"   \
+                                            "${COLLECTION_NAME}" \
+                                             "${sample}"
+                 )
+       total=$((total+new_time))
+       mongo_inserts_time[${indx}]=$total
+   done
+   rm mongo_insert_parts.*
+
+   mongonowt_inserts_time[${indx}]=0
+   split --lines=100000 ${MONGONOWT_INSERTS} mongonowt_insert_parts.
+   for sample in mongo_insert_parts.*
+   do
+       total=mongo_inserts_time[${indx}]
+       new_time=$(mongodb_inserts_benchmark "${MONGONOWTHOST}"       \
+                                            "${MONGONOWTPORT}"       \
+                                            "${MONGONOWTDBNAME}"     \
+                                            "${MONGONOWTUSER}"       \
+                                            "${MONGONOWTPASSWORD}"   \
+                                            "${COLLECTION_NAME}" \
+                                             "${sample}"
+                 )
+       total=$((total+new_time))
+       mongonowt_inserts_time[${indx}]=$total
+   done
+   rm mongonowt_insert_parts.*
 }
 
 ################################################################################

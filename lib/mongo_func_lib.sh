@@ -227,15 +227,14 @@ function mongo_collection_size ()
    typeset -r F_MONGOUSER="$4"
    typeset -r F_MONGOPASSWORD="$5"
    typeset -r F_COLLECTION="$6"
-   typeset -r F_COMMAND="printjson(db.${F_COLLECTION}.stats())"
+   typeset -r F_COMMAND="db.${F_COLLECTION}.dataSize()"
 
    process_log "calculating the size of mongo collection."
    output="$(run_mongo_command "${F_MONGOHOST}" "${F_MONGOPORT}"   \
                                "${F_MONGODBNAME}" "${F_MONGOUSER}" \
                                "${F_MONGOPASSWORD}" "${F_COMMAND}")"
-   collectionsize="$(echo ${output}|awk -F"," '{print $5}'|cut -d":" -f2)"
-
-   echo "${collectionsize}"
+   size=$(echo $output|awk '{print $2}')
+   echo "${size}"
 }
 
 ################################################################################
@@ -249,15 +248,15 @@ function mongo_index_size ()
    typeset -r F_MONGOUSER="$4"
    typeset -r F_MONGOPASSWORD="$5"
    typeset -r F_COLLECTION="$6"
-   typeset -r F_COMMAND="printjson(db.${F_COLLECTION}.stats())"
+   typeset -r F_COMMAND="db.${F_COLLECTION}.totalIndexSize()"
 
    process_log "calculating the size of mongo collection."
    output="$(run_mongo_command "${F_MONGOHOST}" "${F_MONGOPORT}"   \
                                "${F_MONGODBNAME}" "${F_MONGOUSER}" \
                                "${F_MONGOPASSWORD}" "${F_COMMAND}")"
-   indexsize="$(echo ${output}|awk -F"," '{print $(NF-5)}'|cut -d":" -f2)"
 
-   echo "${indexsize}"
+   size=$(echo $output|awk '{print $2}')
+   echo "${size}"
 }
 
 ################################################################################
