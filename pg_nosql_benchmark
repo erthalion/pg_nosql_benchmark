@@ -106,8 +106,8 @@ PG_INSERTS="sample_pg_inserts.json"
 PGJPO_INSERTS="sample_pg_inserts.json"
 PGJSQUERY_INSERTS="sample_pg_inserts.json"
 MYSQL_INSERTS="sample_mysql_inserts.json"
-MONGO_INSERTS="sample_mongo_inserts.json"
-MONGONOWT_INSERTS="sample_mongo_inserts.json"
+MONGO_INSERTS="sample_mongo_inserts.js"
+MONGONOWT_INSERTS="sample_mongo_inserts.js"
 
 export PATH=$PGBIN:$PATH
 
