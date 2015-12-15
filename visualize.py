@@ -1,16 +1,25 @@
 #!/usr/bin/env python
+# a bar plot with errorbars
 import sys
 import json
 import matplotlib.pyplot as plt
 
 
 COLORS = {
-    "PG": 'r',
-    "PGJPO": 'g',
-    "PGJSQUERY": 'b',
-    "MYSQL": 'k',
-    "MONGO": 'y',
-    "MONGONOWT": 'c',
+    "PG": '#8172b2',
+    "PGJPO": '#4c72b0',
+    "PGJSQUERY": '#64b5cd',
+    "MYSQL": '#55a868',
+    "MONGO": '#c44e52',
+    "MONGONOWT": '#ccb974',
+}
+
+TITLES = {
+    "select": "Select (sec)",
+    "insert": "Insert (sec)",
+    "update": "Update (sec)",
+    "table_size": "Table/collection size (mb)",
+    "index_size": "Index size (mb)",
 }
 
 LABELS = {
@@ -22,14 +31,40 @@ LABELS = {
     "MONGONOWT": 'Mongodb 3.2.0 MMAPv1',
 }
 
-LEGEND_ANCHOR = (1.0, 1.0)
+SCALES = {
+    "select": 1e9,
+    "insert": 1e9,
+    "update": 1e9,
+    "table_size": 2**20,
+    "index_size": 2**20,
+}
 
+EXCLUDE_TICKS = {
+    "select": ["MONGONOWT", "PG"],
+    "insert": ["MONGONOWT", "PG", "PGJSQUERY"],
+    "update": ["MONGO", "MONGONOWT"],
+    "table_size": ["MONGO"],
+    "index_size": ["PGJSQUERY"],
+}
+
+def scale_dataset(dataset):
+    return {
+        key: float(value) / SCALES[key]
+        for key, value in dataset.iteritems()
+    }
 
 def main(data, data_type):
     data.pop("number_of_rows")
-    width = 0.25
+    width = 0.25       # the width of the bars
     ax = plt.subplot(111)
     bars = []
+    anchor = (1.0, 1.0)
+
+    if data_type == "index_size":
+        anchor = (0.4, 1.0)
+
+    for key, ds in data.iteritems():
+        data[key] = scale_dataset(ds)
 
     for test, dataset in data.iteritems():
         bars.append(
@@ -41,15 +76,19 @@ def main(data, data_type):
             )
         )
 
-    ax.set_title(LABELS[test])
+
+    ax.set_title(TITLES[data_type])
     ax.margins(0.15, 0.2)
     plt.setp(ax, xticks=[],
-             yticks=[0] + [d[data_type] for d in data.itervalues()])
+             yticks=[0] + [d
+                           [data_type] for k, d in data.iteritems()
+                           if k not in EXCLUDE_TICKS[data_type]
+                           ])
 
     ax.legend(
         (bars),
         (LABELS[k] for k in data.iterkeys()),
-        bbox_to_anchor=LEGEND_ANCHOR,
+        bbox_to_anchor=anchor,
     )
 
     plt.show()
