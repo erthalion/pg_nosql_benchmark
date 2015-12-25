@@ -70,7 +70,7 @@ function run_mongo_file ()
 
    ${MONGO} ${F_MONGOHOST}:${F_MONGOPORT}/${F_MONGODBNAME} \
            --username ${F_MONGOUSER}                       \
-           --password ${F_MONGOPASSWORD} --quiet < ${F_COMMANDFILE}
+           --password ${F_MONGOPASSWORD} --quiet ${F_COMMANDFILE}
 }
 
 ################################################################################
@@ -319,9 +319,9 @@ function mongo_update_benchmark ()
    F_MONGOUSER="$4"
    F_MONGOPASSWORD="$5"
    F_COLLECTION="$6"
-   F_MONGOUPDATE1="db.${F_COLLECTION}.update({brand: 'ACME'}, {\$inc: {price: 100}})"
-   F_MONGOUPDATE2="db.${F_COLLECTION}.update({type: 'service'}, {\$set: {\"limits.data.over_rate\": 10}})"
-   F_MONGOUPDATE3="db.${F_COLLECTION}.update({type: 'service'}, {\$set: {\"limits.data.extra\": 'Extra Data'}})"
+   F_MONGOUPDATE1="db.${F_COLLECTION}.update({brand: 'ACME'}, {\$inc: {price: 100}}, {multi: true})"
+   F_MONGOUPDATE2="db.${F_COLLECTION}.update({type: 'service'}, {\$set: {\"limits.data.over_rate\": 10}}, {multi: true})"
+   F_MONGOUPDATE3="db.${F_COLLECTION}.update({type: 'service'}, {\$set: {\"limits.data.extra\": 'Extra Data'}}, {multi: true})"
 
    process_log "testing mongo FIRST UPDATE"
    start_time=$(get_timestamp_nano)
