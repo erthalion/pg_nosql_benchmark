@@ -428,3 +428,26 @@ function mysql_update_benchmark ()
 
    echo "${AVG}"
 }
+
+################################################################################
+# function: mysql_noop
+################################################################################
+function mysql_noop ()
+{
+   typeset -r F_PGHOST="$1"
+   typeset -r F_PGPORT="$2"
+   typeset -r F_DBNAME="$3"
+   typeset -r F_PGUSER="$4"
+   typeset -r F_PGPASSWORD="$5"
+   typeset -r F_NOOP="SELECT NULL;"
+
+   process_log "testing mysql NOOP"
+   start_time=$(get_timestamp_nano)
+   mysql_run_sql "${F_PGHOST}" "${F_PGPORT}" "${F_DBNAME}" "${F_PGUSER}" \
+           "${F_PGPASSWORD}" \
+           "${F_NOOP}" >/dev/null || exit_on_error "failed to execute UPDATE 1."
+   end_time=$(get_timestamp_nano)
+   total_time="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
+
+   echo "${total_time}"
+}

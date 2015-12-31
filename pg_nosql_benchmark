@@ -158,7 +158,7 @@ for (( indx=0 ; indx < ${#json_rows[@]} ; indx++ ))
 do
    generate_json_rows "${json_rows[${indx}]}" \
                       "${SAMPLEJSON}"
-
+   noop
    insert_maker
    remove_db
    create_db

@@ -351,3 +351,26 @@ function mongo_update_benchmark ()
 
    echo "${AVG}"
 }
+
+################################################################################
+# function: mongo_noop
+################################################################################
+function mongo_noop ()
+{
+   F_MONGOHOST="$1"
+   F_MONGOPORT="$2"
+   F_MONGODBNAME="$3"
+   F_MONGOUSER="$4"
+   F_MONGOPASSWORD="$5"
+   F_MONGONOOP="{ping: 1}"
+
+   process_log "testing mongo NOOP"
+   start_time=$(get_timestamp_nano)
+   run_mongo_command "${F_MONGOHOST}" "${MONGOPORT}" "${F_MONGODBNAME}" \
+                     "${F_MONGOUSER}" \
+                     "${F_MONGOPASSWORD}" "${F_MONGONOOP}" >/dev/null
+   end_time=$(get_timestamp_nano)
+   total_time="$(get_timestamp_diff_nano "${end_time}" "${start_time}")"
+
+   echo "${total_time}"
+}

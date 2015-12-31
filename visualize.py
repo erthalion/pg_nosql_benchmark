@@ -39,6 +39,14 @@ SCALES = {
     "index_size": 2**20,
 }
 
+NEED_CORRECTION = {
+    "select": True,
+    "insert": True,
+    "update": True,
+    "table_size": False,
+    "index_size": False,
+}
+
 EXCLUDE_TICKS = {
     "select": ["MONGONOWT", "PG"],
     "insert": ["MONGONOWT", "PG", "PGJSQUERY"],
@@ -53,6 +61,13 @@ def scale_dataset(dataset):
         for key, value in dataset.iteritems()
     }
 
+def correct_dataset(dataset):
+    noop = dataset.pop("noop")
+    return {
+        key: value - NEED_CORRECTION[key] * noop
+        for key, value in dataset.iteritems()
+    }
+
 def main(data, data_type):
     data.pop("number_of_rows")
     width = 0.25       # the width of the bars
@@ -64,6 +79,7 @@ def main(data, data_type):
         anchor = (0.4, 1.0)
 
     for key, ds in data.iteritems():
+        data[key] = correct_dataset(ds)
         data[key] = scale_dataset(ds)
 
     for test, dataset in data.iteritems():

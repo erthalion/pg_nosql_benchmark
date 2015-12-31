@@ -672,6 +672,54 @@ function update_time ()
 }
 
 ################################################################################
+# noop measure noop operations
+################################################################################
+function noop ()
+{
+    pg_noop[${indx}]=$(pg_noop "${PGHOST}"          \
+                            "${PGPORT}"          \
+                            "${PGUSER}"          \
+                            "${PGUSER}"          \
+                            "${PGPASSWORD}"
+                )
+
+    pg_noop_jpo[${indx}]=$(pg_noop "${PGJPOHOST}"      \
+                            "${PGJPOPORT}"          \
+                            "${PGJPOUSER}"          \
+                            "${PGJPOUSER}"          \
+                            "${PGJPOPASSWORD}"
+                )
+
+    pg_noop_jsquery[${indx}]=$(pg_noop "${PGJSQUERYHOST}"  \
+                            "${PGJSQUERYPORT}"          \
+                            "${PGJSQUERYUSER}"          \
+                            "${PGJSQUERYUSER}"          \
+                            "${PGJSQUERYPASSWORD}"
+                )
+
+    mysql_noop[${indx}]=$(mysql_noop "${MYSQLHOST}"    \
+                            "${MYSQLPORT}"          \
+                            ""                      \
+                            "${MYSQLUSER}"          \
+                            "${MYSQLPASSWORD}"
+                )
+
+    mongodb_noop[${indx}]=$(mongo_noop "${MONGOHOST}"     \
+                                    "${MONGOPORT}"     \
+                                    "${MONGODBNAME}"   \
+                                    "${MONGOUSER}"     \
+                                    "${MONGOPASSWORD}"
+                      )
+
+    mongodb_noop_nowt[${indx}]=$(mongo_noop "${MONGONOWTHOST}"\
+                                    "${MONGONOWTPORT}"     \
+                                    "${MONGONOWTDBNAME}"   \
+                                    "${MONGONOWTUSER}"     \
+                                    "${MONGONOWTPASSWORD}"
+                      )
+}
+
+################################################################################
 # save_results save benchmark data on disk in json format
 ################################################################################
 function save_results ()
@@ -683,42 +731,48 @@ function save_results ()
            \"select\": ${pg_select_time[@]},
            \"update\": ${pg_update_time[@]},
            \"table_size\": ${pg_collection_size_time[@]},
-           \"index_size\": ${pg_index_size_time[@]}
+           \"index_size\": ${pg_index_size_time[@]},
+           \"noop\": ${pg_noop[@]}
         },
         \"PGJPO\": {
            \"insert\": ${pgjpo_inserts_time[@]},
            \"select\": ${pgjpo_select_time[@]},
            \"update\": ${pgjpo_update_time[@]},
            \"table_size\": ${pgjpo_collection_size_time[@]},
-           \"index_size\": ${pgjpo_index_size_time[@]}
+           \"index_size\": ${pgjpo_index_size_time[@]},
+           \"noop\": ${pg_noop[@]}
         },
         \"PGJSQUERY\": {
            \"insert\": ${pgjsquery_inserts_time[@]},
            \"select\": ${pgjsquery_select_time[@]},
            \"update\": ${pgjsquery_update_time[@]},
            \"table_size\": ${pgjsquery_collection_size_time[@]},
-           \"index_size\": ${pgjsquery_index_size_time[@]}
+           \"index_size\": ${pgjsquery_index_size_time[@]},
+           \"noop\": ${pg_noop[@]}
         },
         \"MYSQL\": {
            \"insert\": ${mysql_inserts_time[@]},
            \"select\": ${mysql_select_time[@]},
            \"update\": ${mysql_update_time[@]},
            \"table_size\": ${mysql_collection_size_time[@]},
-           \"index_size\": ${mysql_index_size_time[@]}
+           \"index_size\": ${mysql_index_size_time[@]},
+           \"noop\": ${mysql_noop[@]}
         },
         \"MONGO\": {
            \"insert\": ${mongo_inserts_time[@]},
            \"select\": ${mongo_select_time[@]},
            \"update\": ${mongo_update_time[@]},
            \"table_size\": ${mongo_collection_size_time[@]},
-           \"index_size\": ${mongo_index_size_time[@]}
+           \"index_size\": ${mongo_index_size_time[@]},
+           \"noop\": ${mongodb_noop[@]}
         },
         \"MONGONOWT\": {
            \"insert\": ${mongonowt_inserts_time[@]},
            \"select\": ${mongonowt_select_time[@]},
            \"update\": ${mongonowt_update_time[@]},
            \"table_size\": ${mongonowt_collection_size_time[@]},
-           \"index_size\": ${mongonowt_index_size_time[@]}
+           \"index_size\": ${mongonowt_index_size_time[@]},
+           \"noop\": ${mongodb_noop[@]}
         }
     }" > benchmark_$(date +%F-%T).json
 }
