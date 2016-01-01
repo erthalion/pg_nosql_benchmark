@@ -12,6 +12,10 @@ COLORS = {
     "MYSQL": '#55a868',
     "MONGO": '#c44e52',
     "MONGONOWT": '#ccb974',
+    "PG_FSYNC_OFF": '#4c72b0',
+    "MYSQL_NOSYNC": '#4f805a',
+    "MONGO_JRNL": '#ccb974',
+    "MONGO_FSYNC": '#b5b09c',
 }
 
 TITLES = {
@@ -29,6 +33,10 @@ LABELS = {
     "MYSQL": 'Mysql 5.7.8',
     "MONGO": 'Mongodb 3.2.0',
     "MONGONOWT": 'Mongodb 3.2.0 MMAPv1',
+    "PG_FSYNC_OFF": 'PG 9.5b1 no fsync',
+    "MYSQL_NOSYNC": 'Mysql 5.7.8 no fsync',
+    "MONGO_JRNL": 'Mongodb 3.2.0 journaled',
+    "MONGO_FSYNC": 'Mongodb 3.2.0 fsync',
 }
 
 SCALES = {
@@ -49,8 +57,8 @@ NEED_CORRECTION = {
 
 EXCLUDE_TICKS = {
     "select": ["MONGONOWT", "PG"],
-    "insert": ["MONGONOWT", "PG", "PGJSQUERY"],
-    "update": ["MONGO", "MONGONOWT"],
+    "insert": ["MONGONOWT", "MONGO_JRNL", "MYSQL_NOSYNC", "PG", "PGJSQUERY"],
+    "update": ["MONGO", "MONGONOWT", "MYSQL_NOSYNC"],
     "table_size": ["MONGO"],
     "index_size": ["PGJSQUERY"],
 }
@@ -82,7 +90,7 @@ def main(data, data_type):
         data[key] = correct_dataset(ds)
         data[key] = scale_dataset(ds)
 
-    for test, dataset in data.iteritems():
+    for test, dataset in sorted(data.iteritems()):
         bars.append(
             ax.bar(
                 len(bars) * (width + 0.1),
@@ -103,7 +111,7 @@ def main(data, data_type):
 
     ax.legend(
         (bars),
-        (LABELS[k] for k in data.iterkeys()),
+        (LABELS[k] for k in sorted(data.iterkeys())),
         bbox_to_anchor=anchor,
     )
 
